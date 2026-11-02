@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout — Secure Order Review &amp; Payment | KARTMART{% endblock %}
+
+{% block content %}
+<div class="checkout-page-wrapper">
+    <div class="section-container">
+        <!-- Progress Stepper Header -->
+        <div class="checkout-stepper-bar">
+            <div class="step-node completed">
+                <span class="step-num">1</span>
+                <span class="step-label">Shopping Bag</span>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step-node active">
+                <span class="step-num">2</span>
+                <span class="step-label">Delivery Address</span>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step-node active">
+                <span class="step-num">3</span>
+                <span class="step-label">Payment &amp; Review</span>
+            </div>
+        </div>
+
+        <form action="{{ url_for('checkout.place_order') }}" method="POST" id="checkout-main-form" onsubmit="return handleCheckoutSubmit(event)">
+            <div class="checkout-layout-grid">
+                <!-- Left Column: Address, Payment & Item Review -->
+                <div class="checkout-forms-column">
+                    <!-- Section 1: Delivery Address -->
+                    <div class="checkout-card" id="address-section">
+                        <div class="checkout-card-header">
+                            <span class="step-badge">1</span>
+                            <h2>Delivery Address</h2>
+                        </div>
+                        <div class="checkout-card-body">
+                            {% if addresses %}
+                            <!-- Saved Addresses Picker -->
+                            <div class="saved-addresses-picker">
+                                <label class="picker-label">Choose from your saved addresses:</label>
+                                <div class="saved-addresses-grid">
+                                    {% for addr in addresses %}
+                                    <div class="address-pick-card {% if addr.is_default %}selected{% endif %}" onclick="selectSavedAddress('{{ addr.recipient_name|replace("'", "\\'") }}', '{{ addr.phone }}', '{{ addr.street_address|replace("'", "\\'") }}', '{{ addr.city|replace("'", "\\'") }}', '{{ addr.pincode }}', this)">
+                                        <div class="addr-pick-top">
+                                            <span class="addr-type-pill">{{ addr.address_type }}</span>
+                                            {% if addr.is_default %}<span class="default-chip">Default</span>{% endif %}
+                                        </div>
+                                        <strong class="addr-name">{{ addr.recipient_name }}</strong>
+                                        <p class="addr-text">{{ addr.street_address }}, {{ addr.city }} - {{ addr.pincode }}</p>
+                                        <span class="addr-phone">Phone: {{ addr.phone }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="address-divider-line">
+                                <span>or confirm / edit shipping details below</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="customer_name">Full Name *</label>
+                                    <input type="text" id="customer_name" name="customer_name" value="{{ user.name if user else '' }}" placeholder="Recipient's full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">10-Digit Mobile Number *</label>
+                                    <input type="tel" id="phone" name="phone" value="{{ user.phone if user else '' }}" placeholder="e.g. 9876543210" pattern="[0-9]{10}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email Address (Order Confirmation &amp; Tracking) *</label>
+                                <input type="email" id="email" name="email" value="{{ user.email if user else '' }}" placeholder="e.g. yourname@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="shipping_address">Delivery Address (Door / Street / Area) *</label>
+                                <textarea id="shipping_address" name="shipping_address" rows="3" placeholder="Enter complete flat/house number, building, street, and landmark" required>{{ user.address if user else '' }}</textarea>
+                            </div>
+
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="city">City / District *</label>
+                                    <input type="text" id="city" name="city" value="{{ user.city if user else 'Hyderabad' }}" placeholder="e.g. Hyderabad" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pincode">6-Digit PIN Code *</label>
+                                    <input type="text" id="pincode" name="pincode" value="{{ user.pincode if user else '500081' }}" placeholder="e.g. 500081" pattern="[0-9]{6}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Payment Method -->
+                    <div class="checkout-card" id="payment-section">
+                        <div class="checkout-card-header">
+                            <span class="step-badge">2</span>
+                            <h2>Payment Method</h2>
+                        </div>
+                        <div class="checkout-card-body">
+                            <div class="payment-options-list">
+                                <!-- Option 1: Simulated UPI -->
+                                <label class="payment-method-card active" id="pay-card-upi">
+                                    <div class="payment-radio-wrap">
+                                        <input type="radio" name="payment_method" value="Simulated UPI" checked onchange="selectPaymentMethod('upi')">
+                                    </div>
+                                    <div class="payment-method-details">
+                                        <div class="payment-method-title">
+                                            <strong>⚡ Instant Simulated UPI</strong>
+                                            <span class="badge badge-success">Recommended</span>
+                                        </div>
+                                        <p class="payment-method-desc">Pay instantly using Google Pay, PhonePe, Paytm, or UPI ID (Simulated instant transaction).</p>
+                                        <div class="upi-sub-details" id="upi-sub-box">
+                                            <div class="upi-input-group">
+                                                <input type="text" id="upi_id" placeholder="Enter UPI ID (e.g. username@okhdfcbank)" value="customer@upi">
+                                                <button type="button" class="btn btn-secondary btn-sm" onclick="showToast('UPI ID verified! Ready for simulated payment.')">Verify ID</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- Option 2: Simulated Debit / Credit Card -->
+                                <label class="payment-method-card" id="pay-card-card">
+                                    <div class="payment-radio-wrap">
+                                        <input type="radio" name="payment_method" value="Simulated Card" onchange="selectPaymentMethod('card')">
+                                    </div>
+                                    <div class="payment-method-details">
+                                        <div class="payment-method-title">
+                                            <strong>💳 Credit / Debit / ATM Card</strong>
+                                        </div>
+                                        <p class="payment-method-desc">Simulated card transaction with zero actual bank charges.</p>
+                                        <div class="card-sub-details" id="card-sub-box" style="display:none;">
+                                            <div class="form-group">
+                                                <input type="text" placeholder="Card Number (e.g. 4532 •••• •••• 8912)" value="4532 8901 2345 6789" maxlength="19">
+                                            </div>
+                                            <div class="form-row-2">
+                                                <input type="text" placeholder="MM/YY" value="12/28" maxlength="5">
+                                                <input type="password" placeholder="CVV" value="123" maxlength="3">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- Option 3: Cash on Delivery -->
+                                <label class="payment-method-card" id="pay-card-cod">
+                                    <div class="payment-radio-wrap">
+                                        <input type="radio" name="payment_method" value="Cash on Delivery" onchange="selectPaymentMethod('cod')">
+                                    </div>
+                                    <div class="payment-method-details">
+                                        <div class="payment-method-title">
+                                            <strong>💵 Cash on Delivery (COD)</strong>
+                                        </div>
+                                        <p class="payment-method-desc">Pay in cash or UPI QR at your doorstep upon delivery.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Review Order Items -->
+                    <div class="checkout-card">
+                        <div class="checkout-card-header">
+                            <span class="step-badge">3</span>
+                            <h2>Review Order Items ({{ cart.total_items }})</h2>
+                        </div>
+                        <div class="checkout-card-body">
+                            <div class="checkout-item-preview-list">
+                                {% for item in cart.cart_items %}
+                                <div class="checkout-item-row">
+                                    <img src="{{ item.product.image_url if item.product else '/static/img/products/fallback.jpg' }}" alt="{{ item.product.name if item.product else 'Item' }}" class="checkout-item-thumb" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';">
+                                    <div class="checkout-item-info">
+                                        <h4>{{ item.product.name }}</h4>
+                                        <span class="checkout-item-meta">Qty: {{ item.quantity }} &bull; {{ currency }}{{ "{:,.2f}".format(item.product.price) }} each</span>
+                                    </div>
+                                    <strong class="checkout-item-subtotal">{{ currency }}{{ "{:,.2f}".format(item.subtotal) }}</strong>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Promo Code & Price Summary -->
+                <div class="checkout-summary-column">
+                    <!-- Coupon Application Card -->
+                    <div class="checkout-coupon-card">
+                        <h3>🏷️ Apply Promo Code</h3>
+                        {% if applied_coupon %}
+                        <div class="applied-coupon-pill">
+                            <span>Coupon <strong>{{ applied_coupon }}</strong> applied! (-{{ currency }}{{ "{:,.2f}".format(discount_amount) }})</span>
+                            <a href="{{ url_for('checkout.remove_coupon') }}" class="remove-coupon-btn" title="Remove Coupon">&times;</a>
+                        </div>
+                        {% else %}
+                        <div class="coupon-input-group">
+                            <input type="text" id="coupon_input" placeholder="e.g. DIWALI50" value="DIWALI50">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="applyPromoCode()">Apply</button>
+                        </div>
+                        <div class="quick-coupon-tags">
+                            <span class="coupon-chip" onclick="quickUseCoupon('DIWALI50')">🪔 DIWALI50 (50% OFF)</span>
+                            <span class="coupon-chip" onclick="quickUseCoupon('DIWALIDHOOM')">DIWALIDHOOM (₹1,500 OFF)</span>
+                            <span class="coupon-chip" onclick="quickUseCoupon('FESTIVEGOLD')">FESTIVEGOLD (30% OFF)</span>
+                            <span class="coupon-chip" onclick="quickUseCoupon('WELCOME20')">WELCOME20 (20% OFF)</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Price Details Card -->
+                    <div class="price-summary-card">
+                        <h3 class="summary-card-title">ORDER SUMMARY</h3>
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-row">
+                            <span>Items Subtotal:</span>
+                            <span>{{ currency }}{{ "{:,.2f}".format(cart.subtotal) }}</span>
+                        </div>
+
+                        {% if discount_amount > 0 %}
+                        <div class="summary-row text-success">
+                            <span>Coupon Discount:</span>
+                            <span>-{{ currency }}{{ "{:,.2f}".format(discount_amount) }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="summary-row">
+                            <span>Express Delivery:</span>
+                            {% if cart.delivery_fee == 0 %}
+                            <span class="text-success font-weight-bold">FREE</span>
+                            {% else %}
+                            <span>{{ currency }}{{ "{:,.2f}".format(cart.delivery_fee) }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-row total-highlight-row">
+                            <span>Total Payable:</span>
+                            <strong class="total-big" id="checkout-final-total">{{ currency }}{{ "{:,.2f}".format(final_total) }}</strong>
+                        </div>
+
+                        <!-- Place Order Button -->
+                        <div class="place-order-btn-box">
+                            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-place-order">
+                                <span>🔒 Confirm &amp; Place Order</span>
+                                <span class="btn-arrow">→</span>
+                            </button>
+                        </div>
+
+                        <p class="terms-legal-note">
+                            By placing this order, you agree to KARTMART's purchase terms. Simulated online payments execute in a safe environment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Simulated Payment Processing Modal -->
+<div class="payment-modal-overlay" id="payment-modal">
+    <div class="payment-modal-card">
+        <div class="modal-spinner-ring"></div>
+        <h3 id="modal-payment-title">Simulating Secure Payment...</h3>
+        <p id="modal-payment-subtitle">Connecting to simulated payment gateway with 256-bit encryption.</p>
+        <div class="modal-amount-display">{{ currency }}{{ "{:,.2f}".format(final_total) }}</div>
+        <div class="modal-progress-bar">
+            <div class="modal-progress-fill" id="modal-progress-fill"></div>
+        </div>
+        <span class="modal-safe-badge">🛡️ Safe Simulated Processing &bull; Instant Confirmation</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function selectSavedAddress(name, phone, address, city, pincode, cardEl) {
+    document.querySelectorAll('.address-pick-card').forEach(c => c.classList.remove('selected'));
+    if (cardEl) cardEl.classList.add('selected');
+
+    document.getElementById('customer_name').value = name;
+    document.getElementById('phone').value = phone;
+    document.getElementById('shipping_address').value = address;
+    document.getElementById('city').value = city;
+    document.getElementById('pincode').value = pincode;
+
+    showToast('Delivery address updated', 'info');
+}
+
+function selectPaymentMethod(type) {
+    document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('upi-sub-box').style.display = 'none';
+    document.getElementById('card-sub-box').style.display = 'none';
+    
+    if (type === 'upi') {
+        document.getElementById('pay-card-upi').classList.add('active');
+        document.getElementById('upi-sub-box').style.display = 'block';
+    } else if (type === 'card') {
+        document.getElementById('pay-card-card').classList.add('active');
+        document.getElementById('card-sub-box').style.display = 'block';
+    } else if (type === 'cod') {
+        document.getElementById('pay-card-cod').classList.add('active');
+    }
+}
+
+function quickUseCoupon(code) {
+    const input = document.getElementById('coupon_input');
+    if (input) {
+        input.value = code;
+        applyPromoCode();
+    }
+}
+
+function applyPromoCode() {
+    const input = document.getElementById('coupon_input');
+    if (!input || !input.value.trim()) return;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('checkout.apply_coupon') }}";
+    
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'coupon_code';
+    hidden.value = input.value.trim();
+    form.appendChild(hidden);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function handleCheckoutSubmit(e) {
+    const selectedRadio = document.querySelector('input[name="payment_method"]:checked');
+    const method = selectedRadio ? selectedRadio.value : 'Cash on Delivery';
+
+    if (method !== 'Cash on Delivery') {
+        e.preventDefault();
+        const modal = document.getElementById('payment-modal');
+        const fill = document.getElementById('modal-progress-fill');
+        const title = document.getElementById('modal-payment-title');
+        
+        modal.classList.add('show');
+        title.textContent = `Processing ${method}...`;
+        
+        let width = 10;
+        const interval = setInterval(() => {
+            width += 25;
+            fill.style.width = width + '%';
+            if (width >= 100) {
+                clearInterval(interval);
+                title.textContent = "Payment Verified! Placing Order...";
+                setTimeout(() => {
+                    document.getElementById('checkout-main-form').submit();
+                }, 350);
+            }
+        }, 220);
+        return false;
+    }
+    return true;
+}
+</script>
+{% endblock %}

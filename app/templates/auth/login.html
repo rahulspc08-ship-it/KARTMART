@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — KARTMART{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <span class="auth-brand-logo">🛒 KART<span class="brand-accent">MART</span></span>
+            <h2>Sign in to your account</h2>
+            <p>Access your shopping cart, order tracking, and exclusive discounts.</p>
+        </div>
+
+        <!-- 1-Click Fast Demo Login Buttons -->
+        <div class="demo-login-banner">
+            <span class="demo-banner-title">⚡ Fast Demo Evaluator Access:</span>
+            <div class="demo-banner-btns">
+                <a href="{{ url_for('auth.demo_login', role='customer') }}" class="btn btn-secondary btn-sm">
+                    👤 Log in as Customer
+                </a>
+                <a href="{{ url_for('auth.demo_login', role='admin') }}" class="btn btn-secondary btn-sm admin-btn">
+                    🛡️ Log in as Admin
+                </a>
+            </div>
+        </div>
+
+        <div class="auth-divider">
+            <span>or sign in with email</span>
+        </div>
+
+        <form action="{{ url_for('auth.login', next=request.args.get('next', '')) }}" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" name="email" placeholder="customer@kartmart.local" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <div class="form-label-row">
+                    <label for="login-password">Password</label>
+                </div>
+                <input type="password" id="login-password" name="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-login">
+                <span>Sign In</span>
+                <span class="btn-arrow">&rarr;</span>
+            </button>
+        </form>
+
+        <div class="auth-footer-prompt">
+            <p>New to KARTMART? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+            <p style="margin-top: 12px; font-size: 0.8rem; border-top: 1px solid var(--border-color); padding-top: 12px; color: #94a3b8;">
+                Store Administrator? <a href="{{ url_for('auth.admin_login') }}" style="color: #f59e0b; font-weight: 600;">Admin Sign In</a> &bull; <a href="{{ url_for('auth.admin_register') }}" style="color: #f59e0b; font-weight: 600;">Admin Register</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

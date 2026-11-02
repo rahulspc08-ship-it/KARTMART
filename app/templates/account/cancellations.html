@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Cancelled Orders &amp; Refunds — KARTMART{% endblock %}
+
+{% block content %}
+<div class="account-dashboard-page">
+    <div class="section-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('account.profile') }}">My Account</a> &gt;
+            <span>Cancelled Orders</span>
+        </nav>
+
+        <div class="account-layout-grid">
+            <!-- Sidebar -->
+            <aside class="account-nav-sidebar">
+                <nav class="account-menu-nav">
+                    <a href="{{ url_for('account.profile') }}" class="account-menu-item">
+                        <span class="menu-icon">👤</span>
+                        <span>Personal Profile</span>
+                    </a>
+                    <a href="{{ url_for('orders.history') }}" class="account-menu-item">
+                        <span class="menu-icon">📦</span>
+                        <span>Orders &amp; Shipments</span>
+                    </a>
+                    <a href="{{ url_for('account.cancellations') }}" class="account-menu-item active">
+                        <span class="menu-icon">🛑</span>
+                        <span>Cancelled Orders ({{ orders|length }})</span>
+                    </a>
+                    <a href="{{ url_for('account.addresses') }}" class="account-menu-item">
+                        <span class="menu-icon">📍</span>
+                        <span>Delivery Addresses</span>
+                    </a>
+                    <a href="{{ url_for('account.wishlist') }}" class="account-menu-item">
+                        <span class="menu-icon">❤️</span>
+                        <span>Saved Wishlist</span>
+                    </a>
+                    <a href="{{ url_for('account.security') }}" class="account-menu-item">
+                        <span class="menu-icon">🔒</span>
+                        <span>Password &amp; Security</span>
+                    </a>
+                    <a href="{{ url_for('support.help_center') }}" class="account-menu-item">
+                        <span class="menu-icon">💬</span>
+                        <span>Help &amp; Support</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="account-main-content">
+                <div class="acc-section-card">
+                    <div class="acc-card-header flex-between">
+                        <div>
+                            <h2>Cancelled Orders &amp; Refunds</h2>
+                            <span class="text-muted">Review past cancellations, reasons recorded, and refund execution status.</span>
+                        </div>
+                    </div>
+
+                    {% if orders %}
+                    <div class="cancelled-orders-stack">
+                        {% for ord in orders %}
+                        <div class="cancelled-order-card" id="cancel-card-{{ ord.id }}">
+                            <div class="cancelled-card-top">
+                                <div>
+                                    <span class="badge badge-danger">Cancelled</span>
+                                    <strong class="cancelled-ref">Order # {{ ord.order_ref }}</strong>
+                                </div>
+                                <span class="cancelled-date">Cancelled on {{ ord.cancelled_at.strftime('%d %b %Y, %I:%M %p') if ord.cancelled_at else ord.created_at.strftime('%d %b %Y') }}</span>
+                            </div>
+
+                            <div class="cancelled-audit-details">
+                                <div class="audit-item">
+                                    <span class="audit-label">Reason Recorded:</span>
+                                    <strong class="audit-val text-warning">{{ ord.cancellation_reason or 'Customer Request' }}</strong>
+                                </div>
+                                {% if ord.cancellation_comments %}
+                                <div class="audit-item">
+                                    <span class="audit-label">Customer Feedback:</span>
+                                    <span class="audit-val font-italic">"{{ ord.cancellation_comments }}"</span>
+                                </div>
+                                {% endif %}
+                                <div class="audit-item">
+                                    <span class="audit-label">Refund Status:</span>
+                                    <strong class="audit-val text-success">{{ ord.refund_status }}</strong>
+                                </div>
+                                {% if ord.refund_ref %}
+                                <div class="audit-item">
+                                    <span class="audit-label">Refund Reference:</span>
+                                    <strong class="audit-val text-primary">{{ ord.refund_ref }}</strong>
+                                </div>
+                                {% endif %}
+                                <div class="audit-item">
+                                    <span class="audit-label">Amount:</span>
+                                    <span class="audit-val">{{ currency }}{{ "{:,.2f}".format(ord.refund_amount) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Items Snapshot -->
+                            <div class="cancelled-items-row">
+                                {% for item in ord.items %}
+                                <div class="cancelled-item-chip">
+                                    {% if item.product_image %}
+                                    <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="chip-img" onerror="this.onerror=null; this.src='/static/img/products/headphones.jpg';">
+                                    {% else %}
+                                    <span class="chip-emoji">{{ item.product_emoji }}</span>
+                                    {% endif %}
+                                    <span>{{ item.product_name }} (&times;{{ item.quantity }})</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="cancelled-card-actions">
+                                <a href="{{ url_for('orders.track', order_ref=ord.order_ref) }}" class="btn btn-secondary btn-sm">View Full Details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-mini-card">
+                        <span class="empty-icon">✅</span>
+                        <h3>No cancelled orders found.</h3>
+                        <p>You have zero cancelled orders on your account.</p>
+                        <a href="{{ url_for('orders.history') }}" class="btn btn-secondary btn-sm">View Active Orders</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}

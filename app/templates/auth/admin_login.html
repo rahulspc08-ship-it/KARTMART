@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Sign In — KARTMART Admin Portal{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card" style="border-top: 3px solid #f59e0b;">
+        <div class="auth-header">
+            <span class="auth-brand-logo">🛡️ KART<span class="brand-accent">ADMIN</span></span>
+            <h2>Administrator Portal</h2>
+            <p>Authorized access to inventory, orders, marketing, and store analytics.</p>
+        </div>
+
+        <!-- 1-Click Fast Admin Demo Login -->
+        <div class="demo-login-banner" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4);">
+            <span class="demo-banner-title">⚡ 1-Click Administrator Access:</span>
+            <div style="display: flex; gap: 8px; flex-direction: column;">
+                <a href="{{ url_for('auth.demo_login', role='admin') }}" class="btn btn-secondary btn-block btn-sm admin-btn" style="background: #f59e0b; color: #000; font-weight: 700; border: none; text-align: center; padding: 10px;">
+                    🛡️ Instant Login as Store Admin
+                </a>
+                <div style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 4px;">
+                    Default Email: <code style="color: #fbbf24;">admin@kartmart.local</code> | Pass: <code style="color: #fbbf24;">Admin@123</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-divider">
+            <span>or sign in with admin credentials</span>
+        </div>
+
+        <form action="{{ url_for('auth.admin_login', next=request.args.get('next', '')) }}" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="admin-email">Admin Email Address</label>
+                <input type="email" id="admin-email" name="email" placeholder="admin@kartmart.local" value="admin@kartmart.local" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" name="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-admin-login">
+                <span>Access Admin Console</span>
+                <span class="btn-arrow">&rarr;</span>
+            </button>
+        </form>
+
+        <div class="auth-footer-prompt" style="display: flex; flex-direction: column; gap: 8px; margin-top: 24px;">
+            <p>New Store Manager? <a href="{{ url_for('auth.admin_register') }}" style="color: #f59e0b; font-weight: 600;">Register New Administrator Account</a></p>
+            <p style="font-size: 0.8rem;"><a href="{{ url_for('auth.login') }}" style="color: #94a3b8;">← Return to Customer Sign In</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

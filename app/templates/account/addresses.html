@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Delivery Addresses — KARTMART{% endblock %}
+
+{% block content %}
+<div class="account-dashboard-page">
+    <div class="section-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('account.profile') }}">My Account</a> &gt;
+            <span>Delivery Addresses</span>
+        </nav>
+
+        <div class="account-layout-grid">
+            <!-- Sidebar -->
+            <aside class="account-nav-sidebar">
+                <div class="account-user-card">
+                    <div class="avatar-circle">
+                        <span>{{ user.name[0]|upper }}</span>
+                    </div>
+                    <div class="user-meta">
+                        <h3>{{ user.name }}</h3>
+                        <span class="user-email-text">{{ user.email }}</span>
+                    </div>
+                </div>
+
+                <nav class="account-menu-nav">
+                    <a href="{{ url_for('account.profile') }}" class="account-menu-item">
+                        <span class="menu-icon">👤</span>
+                        <span>Personal Profile</span>
+                    </a>
+                    <a href="{{ url_for('orders.history') }}" class="account-menu-item">
+                        <span class="menu-icon">📦</span>
+                        <span>Orders &amp; Shipments</span>
+                    </a>
+                    <a href="{{ url_for('account.cancellations') }}" class="account-menu-item">
+                        <span class="menu-icon">🛑</span>
+                        <span>Cancelled Orders</span>
+                    </a>
+                    <a href="{{ url_for('account.addresses') }}" class="account-menu-item active">
+                        <span class="menu-icon">📍</span>
+                        <span>Delivery Addresses</span>
+                    </a>
+                    <a href="{{ url_for('account.wishlist') }}" class="account-menu-item">
+                        <span class="menu-icon">❤️</span>
+                        <span>Saved Wishlist</span>
+                    </a>
+                    <a href="{{ url_for('account.security') }}" class="account-menu-item">
+                        <span class="menu-icon">🔒</span>
+                        <span>Password &amp; Security</span>
+                    </a>
+                    <a href="{{ url_for('support.help_center') }}" class="account-menu-item">
+                        <span class="menu-icon">💬</span>
+                        <span>Help &amp; Support</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="account-main-content">
+                <div class="acc-section-card">
+                    <div class="acc-card-header flex-between">
+                        <div>
+                            <h2>Saved Delivery Addresses</h2>
+                            <span class="text-muted">Manage your home, office, and secondary shipping locations.</span>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('add-address-modal').classList.add('show')">
+                            + Add New Address
+                        </button>
+                    </div>
+
+                    <div class="addresses-grid">
+                        {% for addr in addresses %}
+                        <div class="address-card {% if addr.is_default %}default-card{% endif %}">
+                            <div class="address-card-header">
+                                <span class="addr-tag">{{ addr.address_type }}</span>
+                                {% if addr.is_default %}
+                                <span class="badge badge-success">Default</span>
+                                {% endif %}
+                            </div>
+
+                            <strong class="addr-person">{{ addr.recipient_name }}</strong>
+                            <p class="addr-body">
+                                {{ addr.street_address }}<br>
+                                {% if addr.landmark %}Landmark: {{ addr.landmark }}<br>{% endif %}
+                                {{ addr.city }}, {{ addr.state }} - <strong>{{ addr.pincode }}</strong>
+                            </p>
+                            <span class="addr-phone-line">📱 {{ addr.phone }}</span>
+
+                            <div class="addr-actions-row">
+                                {% if not addr.is_default %}
+                                <form action="{{ url_for('account.set_default_address', addr_id=addr.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-secondary btn-sm">Set as Default</button>
+                                </form>
+                                {% endif %}
+
+                                <form action="{{ url_for('account.delete_address', addr_id=addr.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this address?')">
+                                    <button type="submit" class="btn btn-outline btn-sm text-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-mini-card">
+                            <p>No delivery addresses saved. Add your primary home or office address.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Add Address Modal -->
+<div class="modal-overlay" id="add-address-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Add New Delivery Address</h3>
+            <button type="button" class="modal-close-btn" onclick="document.getElementById('add-address-modal').classList.remove('show')">&times;</button>
+        </div>
+        <form action="{{ url_for('account.add_address') }}" method="POST">
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="modal_recipient_name">Full Name *</label>
+                    <input type="text" id="modal_recipient_name" name="recipient_name" value="{{ user.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal_phone">10-Digit Mobile *</label>
+                    <input type="tel" id="modal_phone" name="phone" value="{{ user.phone or '' }}" pattern="[0-9]{10}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="modal_street">Flat / House No. / Street Address *</label>
+                <textarea id="modal_street" name="street_address" rows="2" placeholder="Building, Street, Area" required></textarea>
+            </div>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="modal_landmark">Landmark (Optional)</label>
+                    <input type="text" id="modal_landmark" name="landmark" placeholder="e.g. Near Metro Station">
+                </div>
+                <div class="form-group">
+                    <label for="modal_pincode">6-Digit PIN Code *</label>
+                    <input type="text" id="modal_pincode" name="pincode" placeholder="e.g. 500081" pattern="[0-9]{6}" required>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="modal_city">City / Town *</label>
+                    <input type="text" id="modal_city" name="city" value="Hyderabad" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal_state">State *</label>
+                    <input type="text" id="modal_state" name="state" value="Telangana" required>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="modal_type">Address Type</label>
+                    <select id="modal_type" name="address_type">
+                        <option value="Home">Home (All-day delivery)</option>
+                        <option value="Work">Work / Office (Delivery 9 AM - 6 PM)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group checkbox-group-wrap">
+                    <label class="custom-checkbox-label">
+                        <input type="checkbox" name="is_default" checked>
+                        <span>Make this my default address</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer-actions">
+                <button type="submit" class="btn btn-primary">Save Delivery Address</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-address-modal').classList.remove('show')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

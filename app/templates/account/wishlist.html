@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}My Saved Wishlist — KARTMART{% endblock %}
+
+{% block content %}
+<div class="account-dashboard-page">
+    <div class="section-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('account.profile') }}">My Account</a> &gt;
+            <span>Saved Wishlist</span>
+        </nav>
+
+        <div class="account-layout-grid">
+            <!-- Sidebar -->
+            <aside class="account-nav-sidebar">
+                <nav class="account-menu-nav">
+                    <a href="{{ url_for('account.profile') }}" class="account-menu-item">
+                        <span class="menu-icon">👤</span>
+                        <span>Personal Profile</span>
+                    </a>
+                    <a href="{{ url_for('orders.history') }}" class="account-menu-item">
+                        <span class="menu-icon">📦</span>
+                        <span>Orders &amp; Shipments</span>
+                    </a>
+                    <a href="{{ url_for('account.cancellations') }}" class="account-menu-item">
+                        <span class="menu-icon">🛑</span>
+                        <span>Cancelled Orders</span>
+                    </a>
+                    <a href="{{ url_for('account.addresses') }}" class="account-menu-item">
+                        <span class="menu-icon">📍</span>
+                        <span>Delivery Addresses</span>
+                    </a>
+                    <a href="{{ url_for('account.wishlist') }}" class="account-menu-item active">
+                        <span class="menu-icon">❤️</span>
+                        <span>Saved Wishlist ({{ items|length }})</span>
+                    </a>
+                    <a href="{{ url_for('account.security') }}" class="account-menu-item">
+                        <span class="menu-icon">🔒</span>
+                        <span>Password &amp; Security</span>
+                    </a>
+                    <a href="{{ url_for('support.help_center') }}" class="account-menu-item">
+                        <span class="menu-icon">💬</span>
+                        <span>Help &amp; Support</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="account-main-content">
+                <div class="acc-section-card">
+                    <div class="acc-card-header flex-between">
+                        <div>
+                            <h2>My Wishlist ({{ items|length }} items)</h2>
+                            <span class="text-muted">Items you have saved to purchase later.</span>
+                        </div>
+                    </div>
+
+                    {% if items %}
+                    <div class="wishlist-products-grid">
+                        {% for item in items %}
+                        {% if item.product %}
+                        <article class="wishlist-card" id="wishlist-row-{{ item.id }}">
+                            <a href="{{ url_for('products.detail', product_id=item.product.id) }}" class="wishlist-media">
+                                {% if item.product.image_url %}
+                                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="wishlist-img" onerror="this.onerror=null; this.src='/static/img/products/headphones.jpg';">
+                                {% else %}
+                                <span class="wishlist-emoji">{{ item.product.emoji }}</span>
+                                {% endif %}
+                            </a>
+
+                            <div class="wishlist-info">
+                                <span class="wishlist-category">{{ item.product.category.name if item.product.category else 'Store' }}</span>
+                                <h3 class="wishlist-title">
+                                    <a href="{{ url_for('products.detail', product_id=item.product.id) }}">{{ item.product.name }}</a>
+                                </h3>
+
+                                <div class="wishlist-pricing">
+                                    <span class="selling-price">{{ currency }}{{ "{:,.2f}".format(item.product.price) }}</span>
+                                    {% if item.product.original_price %}
+                                    <span class="mrp-price">{{ currency }}{{ "{:,.2f}".format(item.product.original_price) }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="wishlist-stock">
+                                    {% if item.product.stock > 0 %}
+                                    <span class="text-success">✅ In Stock</span>
+                                    {% else %}
+                                    <span class="text-danger">❌ Out of Stock</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="wishlist-actions">
+                                    {% if item.product.stock > 0 %}
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="quickAddToCart({{ item.product.id }}, '{{ item.product.name }}')">
+                                        <span>Move to Cart</span>
+                                    </button>
+                                    {% endif %}
+
+                                    <form action="{{ url_for('account.toggle_wishlist', product_id=item.product.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-outline btn-sm text-danger">Remove</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-mini-card">
+                        <span class="empty-icon">❤️</span>
+                        <h3>Your wishlist is currently empty.</h3>
+                        <p>Explore our bestsellers, new tech arrivals, and fashion to save your favorites!</p>
+                        <a href="{{ url_for('products.catalogue') }}" class="btn btn-primary">Discover Products</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}

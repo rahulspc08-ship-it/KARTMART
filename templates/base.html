@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KARTMART — Next-Gen Responsive E-Commerce Shopping System">
+    <title>{% block title %}KARTMART — Modern E-Commerce{% endblock %}</title>
+    <!-- Modern Typography: Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation Header -->
+    <header class="site-header" id="site-header">
+        <div class="nav-container">
+            <a href="{{ url_for('main.index') }}" class="brand-logo" id="brand-logo">
+                <span class="brand-icon">🛒</span>
+                <span class="brand-text">KART<span class="brand-accent">MART</span></span>
+            </a>
+
+            <!-- Search Bar Form -->
+            <form class="nav-search" role="search" id="nav-search-form" onsubmit="event.preventDefault();">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="search" id="nav-search-input" placeholder="Search products, brands and categories..." aria-label="Search products">
+                </div>
+            </form>
+
+            <!-- Desktop Nav Links -->
+            <nav class="nav-menu" id="nav-menu" aria-label="Main Navigation">
+                <a href="{{ url_for('main.index') }}" class="nav-link active" id="nav-home">Home</a>
+                <a href="#categories-section" class="nav-link" id="nav-categories">Categories</a>
+                <a href="#products-section" class="nav-link" id="nav-products">Catalogue</a>
+                <a href="#system-status" class="nav-link" id="nav-status">System Status</a>
+                <div class="nav-actions">
+                    <a href="#cart" class="cart-btn" id="nav-cart-btn" aria-label="Shopping Cart">
+                        <span class="cart-icon">🛍️</span>
+                        <span class="cart-count" id="cart-item-count">0</span>
+                    </a>
+                    <a href="#login" class="btn btn-outline" id="nav-login-btn">Log In</a>
+                    <a href="#register" class="btn btn-primary" id="nav-register-btn">Register</a>
+                </div>
+            </nav>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button class="mobile-toggle" id="mobile-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Flash Messages Container -->
+    <div class="flash-container" id="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-alert flash-{{ category }}" role="alert">
+                        <span class="flash-text">{{ message }}</span>
+                        <button type="button" class="flash-close" aria-label="Close message">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main id="main-content" class="main-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-col brand-col">
+                    <div class="brand-logo footer-logo">
+                        <span class="brand-icon">🛒</span>
+                        <span class="brand-text">KART<span class="brand-accent">MART</span></span>
+                    </div>
+                    <p class="footer-desc">
+                        A modern, responsive e-commerce web platform engineered with Python Flask, SQLAlchemy, and vanilla JavaScript.
+                    </p>
+                    <div class="footer-badges">
+                        <span class="badge badge-subtle">⚡ Flask 3.1</span>
+                        <span class="badge badge-subtle">🛡️ SQLAlchemy</span>
+                        <span class="badge badge-subtle">🔒 Simulated COD & Online Pay</span>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h2 class="footer-title">Product Categories</h2>
+                    <ul class="footer-links">
+                        <li><a href="#electronics">Electronics & Audio</a></li>
+                        <li><a href="#clothing">Clothing & Fashion</a></li>
+                        <li><a href="#accessories">Watches & Accessories</a></li>
+                        <li><a href="#books">Books & Guides</a></li>
+                        <li><a href="#home">Home Products</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h2 class="footer-title">Engineering Specs</h2>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('main.health_check') }}" target="_blank">Health Check API</a></li>
+                        <li><a href="#docs">Project Documentation</a></li>
+                        <li><a href="#security">Security & Data Integrity</a></li>
+                        <li><a href="#architecture">MVC Architecture</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h2 class="footer-title">Demonstration Environment</h2>
+                    <p class="footer-note">
+                        Designed for laboratory demonstrations on Windows with Google Antigravity. Payments are simulated and process no real monetary transactions.
+                    </p>
+                    <div class="status-indicator-box">
+                        <span class="status-dot status-dot-online"></span>
+                        <span class="status-label">Server: <strong>127.0.0.1:5000</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 KARTMART Shopping System. Developed following documented software engineering workflows.</p>
+                <div class="footer-bottom-links">
+                    <a href="#privacy">Privacy</a>
+                    <a href="#terms">Terms</a>
+                    <a href="#demo">Demo Mode</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Client Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

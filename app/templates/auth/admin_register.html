@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Register Administrator — KARTMART Admin Portal{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card" style="border-top: 3px solid #10b981; max-width: 480px;">
+        <div class="auth-header">
+            <span class="auth-brand-logo">🛡️ KART<span class="brand-accent">ADMIN</span></span>
+            <h2>Create Administrator Account</h2>
+            <p>Register as a store operator to manage products, pricing, stock, and orders.</p>
+        </div>
+
+        <div class="demo-login-banner" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+            <span class="demo-banner-title" style="color: #34d399;">🔑 Security Gatekeeper Notice:</span>
+            <p style="font-size: 0.78rem; color: #94a3b8; margin: 0;">
+                Administrator registration requires an authorized <strong>Admin Security Key</strong> (default: <code style="color: #34d399;">Admin@2026</code>).
+            </p>
+        </div>
+
+        <form action="{{ url_for('auth.admin_register') }}" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="admin-reg-name">Administrator Full Name *</label>
+                <input type="text" id="admin-reg-name" name="name" placeholder="e.g. Operations Lead" required autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label for="admin-reg-email">Official Admin Email Address *</label>
+                <input type="email" id="admin-reg-email" name="email" placeholder="e.g. ops@kartmart.local" required autocomplete="email">
+            </div>
+
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="admin-reg-pass">Password (min 6 chars) *</label>
+                    <input type="password" id="admin-reg-pass" name="password" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="admin-reg-confirm">Confirm Password *</label>
+                    <input type="password" id="admin-reg-confirm" name="confirm_password" placeholder="Re-enter password" minlength="6" required autocomplete="new-password">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="admin-key">Admin Security Key *</label>
+                <input type="text" id="admin-key" name="admin_key" value="{{ default_key }}" placeholder="Enter authorized security key" required>
+                <small style="color: #64748b; font-size: 0.72rem; display: block; margin-top: 4px;">Authorization key protects against unauthorized administrative account creation.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="admin-reg-phone">Contact Mobile Number</label>
+                <input type="tel" id="admin-reg-phone" name="phone" placeholder="10-digit mobile number">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-admin-register" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border-color: #059669;">
+                <span>Create Administrator Profile</span>
+                <span class="btn-arrow">&rarr;</span>
+            </button>
+        </form>
+
+        <div class="auth-footer-prompt" style="display: flex; flex-direction: column; gap: 8px; margin-top: 24px;">
+            <p>Already an administrator? <a href="{{ url_for('auth.admin_login') }}" style="color: #10b981; font-weight: 600;">Sign in to Admin Console</a></p>
+            <p style="font-size: 0.8rem;"><a href="{{ url_for('auth.register') }}" style="color: #94a3b8;">← Standard Customer Registration</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

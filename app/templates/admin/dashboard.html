@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — KARTMART Management Console{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-wrapper">
+    <div class="section-container">
+        <div class="admin-top-banner">
+            <div>
+                <span class="admin-badge">🛡️ ADMINISTRATOR CONSOLE</span>
+                <h1>Store Operations &amp; Performance Overview</h1>
+            </div>
+            <div class="admin-header-actions">
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-secondary btn-sm">📋 Orders</a>
+                <a href="{{ url_for('admin.cancellations') }}" class="btn btn-secondary btn-sm">🛑 Cancellations</a>
+                <a href="{{ url_for('admin.campaigns') }}" class="btn btn-secondary btn-sm">🪔 Diwali Campaigns</a>
+                <a href="{{ url_for('admin.products') }}" class="btn btn-primary btn-sm">📦 Products</a>
+                <a href="{{ url_for('admin.support') }}" class="btn btn-secondary btn-sm">💬 Support Desk</a>
+            </div>
+        </div>
+
+        <!-- 4 Key Performance Metrics -->
+        <div class="admin-kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-icon">💰</span>
+                <div class="kpi-details">
+                    <span class="kpi-label">TOTAL STORE REVENUE</span>
+                    <strong class="kpi-number text-success">{{ currency }}{{ "{:,.2f}".format(total_sales) }}</strong>
+                    <span class="kpi-hint">From confirmed &amp; delivered shipments</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-icon">📦</span>
+                <div class="kpi-details">
+                    <span class="kpi-label">TOTAL ORDERS PLACED</span>
+                    <strong class="kpi-number">{{ total_orders }}</strong>
+                    <span class="kpi-hint">{{ pending_orders_count }} awaiting dispatch</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-icon">⚡</span>
+                <div class="kpi-details">
+                    <span class="kpi-label">ACTIVE CATALOGUE ITEMS</span>
+                    <strong class="kpi-number">{{ active_products }}</strong>
+                    <span class="kpi-hint">Across 5 main categories</span>
+                </div>
+            </div>
+
+            <div class="kpi-card {% if low_stock %}border-warning{% endif %}">
+                <span class="kpi-icon">⚠️</span>
+                <div class="kpi-details">
+                    <span class="kpi-label">LOW STOCK ALERTS</span>
+                    <strong class="kpi-number {% if low_stock %}text-danger{% else %}text-success{% endif %}">{{ low_stock|length }}</strong>
+                    <span class="kpi-hint">Products with &le; 5 units remaining</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Items Warning Bar (if any) -->
+        {% if low_stock %}
+        <div class="alert alert-warning admin-stock-alert">
+            <strong>⚠️ Low Stock Attention Required:</strong>
+            {% for lp in low_stock %}
+                <span>{{ lp.name }} (Only {{ lp.stock }} left!)</span>{% if not loop.last %} &bull; {% endif %}
+            {% endfor %}
+            <a href="{{ url_for('admin.products') }}" class="stock-action-link">Restock Inventory &rarr;</a>
+        </div>
+        {% endif %}
+
+        <!-- Recent Customer Orders Section with Live Status Changer -->
+        <div class="admin-section-panel">
+            <div class="panel-header">
+                <h2>Recent Customer Orders</h2>
+                <a href="{{ url_for('admin.orders') }}" class="view-all-link">View All Orders &rarr;</a>
+            </div>
+
+            {% if recent_orders %}
+            <div class="admin-table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order Ref</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Current Status</th>
+                            <th>Action / Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in recent_orders %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('orders.track', order_ref=ord.order_ref) }}" class="table-order-link font-weight-bold">
+                                    {{ ord.order_ref }}
+                                </a>
+                            </td>
+                            <td>
+                                <strong>{{ ord.customer_name }}</strong><br>
+                                <span class="text-muted">{{ ord.phone }}</span>
+                            </td>
+                            <td>{{ ord.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                            <td><strong>{{ currency }}{{ "{:,.2f}".format(ord.total_amount) }}</strong></td>
+                            <td>
+                                <span>{{ ord.payment_method }}</span><br>
+                                <span class="badge badge-subtle">{{ ord.payment_status }}</span>
+                            </td>
+                            <td>
+                                <span class="status-pill status-{{ ord.order_status|lower|replace(' ', '-') }}">
+                                    {{ ord.order_status }}
+                                </span>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('admin.update_status', order_id=ord.id) }}" method="POST" class="status-change-form">
+                                    <select name="order_status" class="admin-status-select" onchange="this.form.submit()">
+                                        <option value="Placed" {% if ord.order_status == 'Placed' %}selected{% endif %}>Placed</option>
+                                        <option value="Confirmed" {% if ord.order_status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                        <option value="Shipped" {% if ord.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                        <option value="Out for Delivery" {% if ord.order_status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                                        <option value="Delivered" {% if ord.order_status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                        <option value="Cancelled" {% if ord.order_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted p-20">No orders placed yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

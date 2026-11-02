@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Cancel Order {{ order.order_ref }} — KARTMART{% endblock %}
+
+{% block content %}
+<div class="cancellation-page-wrapper">
+    <div class="section-container max-w-700">
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('orders.history') }}">Your Orders</a> &gt;
+            <a href="{{ url_for('orders.track', order_ref=order.order_ref) }}">{{ order.order_ref }}</a> &gt;
+            <span>Cancel Order</span>
+        </nav>
+
+        {% if not order.can_be_cancelled() %}
+        <!-- Order Dispatched Warning State -->
+        <div class="cancel-blocked-card">
+            <div class="blocked-icon">⚠️</div>
+            <h2>Order Cannot Be Cancelled</h2>
+            <p>
+                Order <strong>{{ order.order_ref }}</strong> is currently <strong>{{ order.order_status }}</strong>.
+                Items that have already been shipped or out for delivery cannot be cancelled in-transit.
+            </p>
+            <div class="blocked-perk">
+                <span>💡 You can refuse delivery at your doorstep or initiate a 7-day hassle-free return once delivered.</span>
+            </div>
+            <div class="btn-row-center">
+                <a href="{{ url_for('orders.track', order_ref=order.order_ref) }}" class="btn btn-primary">Track Shipment</a>
+                <a href="{{ url_for('support.help_center') }}" class="btn btn-secondary">Contact Customer Support</a>
+            </div>
+        </div>
+        {% else %}
+
+        <!-- Multi-Step Cancellation Form Card -->
+        <div class="cancellation-card">
+            <div class="cancel-card-header">
+                <div class="cancel-header-title">
+                    <span class="cancel-icon">🛑</span>
+                    <div>
+                        <h1>Cancel Order</h1>
+                        <p class="order-ref-sub">Order Reference: <strong>{{ order.order_ref }}</strong> &bull; Placed on {{ order.created_at.strftime('%d %b %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Snapshot in this Order -->
+            <div class="cancel-items-box">
+                <h4 class="cancel-section-subtitle">Items in this cancellation:</h4>
+                <div class="cancel-items-list">
+                    {% for item in order.items %}
+                    <div class="cancel-item-row">
+                        {% if item.product_image %}
+                        <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="cancel-item-img" onerror="this.onerror=null; this.src='/static/img/products/headphones.jpg';">
+                        {% else %}
+                        <span class="cancel-item-emoji">{{ item.product_emoji }}</span>
+                        {% endif %}
+                        <div class="cancel-item-details">
+                            <span class="cancel-item-name">{{ item.product_name }}</span>
+                            <span class="cancel-item-meta">Qty: {{ item.quantity }} &bull; {{ currency }}{{ "{:,.2f}".format(item.unit_price) }}</span>
+                        </div>
+                        <strong class="cancel-item-subtotal">{{ currency }}{{ "{:,.2f}".format(item.line_total) }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <form action="{{ url_for('orders.cancel', order_ref=order.order_ref) }}" method="POST" id="order-cancel-form" onsubmit="return validateCancellation(event)">
+                <!-- Step 1: Mandatory Cancellation Reason Selection -->
+                <div class="cancel-form-section">
+                    <h3 class="cancel-step-title">
+                        <span class="step-num">1</span>
+                        <span>Why are you cancelling this order? *</span>
+                    </h3>
+                    <p class="cancel-step-hint">Please select the most relevant reason to help us improve our shopping experience:</p>
+
+                    <div class="cancellation-reasons-group">
+                        {% for reason in reasons %}
+                        <label class="reason-radio-label" id="label-reason-{{ loop.index }}">
+                            <input type="radio" name="cancellation_reason" value="{{ reason }}" onchange="handleReasonChange(this)" required>
+                            <span class="reason-radio-custom"></span>
+                            <span class="reason-text">{{ reason }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Conditional Explanation for "Other reason" -->
+                    <div class="conditional-comments-box" id="comments-box" style="display: none;">
+                        <label for="cancellation_comments">Please tell us more details: *</label>
+                        <textarea id="cancellation_comments" name="cancellation_comments" rows="3" placeholder="Provide a brief explanation of why you are cancelling..."></textarea>
+                        <span class="field-hint">Minimum 5 characters required for other feedback.</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Refund Preference -->
+                <div class="cancel-form-section">
+                    <h3 class="cancel-step-title">
+                        <span class="step-num">2</span>
+                        <span>Refund &amp; Payment Details</span>
+                    </h3>
+
+                    <div class="refund-summary-box">
+                        <div class="refund-row">
+                            <span>Original Payment Method:</span>
+                            <strong>{{ order.payment_method }}</strong>
+                        </div>
+                        <div class="refund-row highlight-refund">
+                            <span>Total Refundable Amount:</span>
+                            <strong class="text-success">{{ currency }}{{ "{:,.2f}".format(order.total_amount) }}</strong>
+                        </div>
+
+                        {% if order.payment_method == 'Cash on Delivery' %}
+                        <div class="cod-refund-note">
+                            <span>💵 Zero Charges: Since this was a Cash on Delivery order, no payment was collected and no deduction will occur.</span>
+                        </div>
+                        {% else %}
+                        <div class="refund-method-options">
+                            <span class="refund-select-label">Choose how you'd like your refund:</span>
+                            <label class="refund-option-card active">
+                                <input type="radio" name="refund_method" value="source" checked>
+                                <div class="refund-opt-text">
+                                    <strong>Original Payment Source (Simulated)</strong>
+                                    <span class="text-muted">Refunded back to your card/UPI account within 2-3 business days.</span>
+                                </div>
+                            </label>
+                            <label class="refund-option-card">
+                                <input type="radio" name="refund_method" value="wallet">
+                                <div class="refund-opt-text">
+                                    <strong>KARTMART Wallet Balance (Instant)</strong>
+                                    <span class="text-muted">Instant store credit usable immediately on any future purchases.</span>
+                                </div>
+                            </label>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="cancel-form-actions">
+                    <button type="submit" class="btn btn-danger btn-lg btn-confirm-cancel" id="btn-submit-cancellation">
+                        <span>Confirm Order Cancellation</span>
+                    </button>
+                    <a href="{{ url_for('orders.track', order_ref=order.order_ref) }}" class="btn btn-secondary btn-lg">
+                        <span>Keep My Order</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function handleReasonChange(radio) {
+    document.querySelectorAll('.reason-radio-label').forEach(l => l.classList.remove('active'));
+    radio.closest('.reason-radio-label').classList.add('active');
+
+    const commentsBox = document.getElementById('comments-box');
+    const textarea = document.getElementById('cancellation_comments');
+
+    if (radio.value === 'Other reason') {
+        commentsBox.style.display = 'block';
+        textarea.required = true;
+        textarea.focus();
+    } else {
+        commentsBox.style.display = 'none';
+        textarea.required = false;
+    }
+}
+
+function validateCancellation(e) {
+    const selectedReason = document.querySelector('input[name="cancellation_reason"]:checked');
+    if (!selectedReason) {
+        alert('Please select a cancellation reason.');
+        return false;
+    }
+
+    if (selectedReason.value === 'Other reason') {
+        const comments = document.getElementById('cancellation_comments').value.trim();
+        if (comments.length < 5) {
+            alert('Please provide an explanation (at least 5 characters) for why you are cancelling.');
+            return false;
+        }
+    }
+
+    return confirm('Are you sure you want to cancel this order? This action cannot be undone.');
+}
+</script>
+{% endblock %}

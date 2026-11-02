@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Order Cancellations — KARTMART Admin{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-wrapper">
+    <div class="section-container">
+        <div class="admin-top-banner">
+            <div>
+                <span class="admin-badge">ADMIN CONTROL</span>
+                <h1>Customer Order Cancellations ({{ orders|length }})</h1>
+            </div>
+            <div class="admin-header-actions">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">&larr; Back to Dashboard</a>
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-primary btn-sm">All Orders</a>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="admin-data-table">
+                    <thead>
+                        <tr>
+                            <th>Order Ref</th>
+                            <th>Customer</th>
+                            <th>Cancelled Date</th>
+                            <th>Cancellation Reason</th>
+                            <th>Customer Feedback</th>
+                            <th>Refund Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in orders %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('orders.track', order_ref=ord.order_ref) }}"><strong>{{ ord.order_ref }}</strong></a>
+                            </td>
+                            <td>
+                                <div>{{ ord.customer_name }}</div>
+                                <span class="text-muted">{{ ord.email }}</span>
+                            </td>
+                            <td>{{ ord.cancelled_at.strftime('%d %b %Y, %I:%M %p') if ord.cancelled_at else ord.created_at.strftime('%d %b %Y') }}</td>
+                            <td>
+                                <span class="badge badge-warning">{{ ord.cancellation_reason or 'Not Specified' }}</span>
+                            </td>
+                            <td>
+                                {% if ord.cancellation_comments %}
+                                <span class="font-italic text-muted">"{{ ord.cancellation_comments }}"</span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-success">{{ ord.refund_status }}</span>
+                                {% if ord.refund_ref %}
+                                <div class="text-muted"><small>Ref: {{ ord.refund_ref }}</small></div>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ currency }}{{ "{:,.2f}".format(ord.refund_amount) }}</strong></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">No order cancellations recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

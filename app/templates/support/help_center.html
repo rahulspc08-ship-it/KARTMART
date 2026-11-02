@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Help &amp; Customer Support Center — KARTMART{% endblock %}
+
+{% block content %}
+<div class="support-page-wrapper">
+    <!-- Hero Help Search Banner -->
+    <section class="support-hero">
+        <div class="section-container">
+            <span class="support-hero-tag">24/7 CUSTOMER CARE</span>
+            <h1>How can we help you today?</h1>
+            <p>Find instant answers to questions regarding order tracking, cancellations, refunds, and festive offers.</p>
+
+            <div class="support-search-bar">
+                <input type="search" id="faq-search-input" placeholder="Type your issue (e.g. cancel order, refund timeline, delivery)..." onkeyup="filterFaqs()">
+            </div>
+        </div>
+    </section>
+
+    <div class="section-container">
+        <div class="support-content-grid">
+            <!-- Left: Searchable FAQ Accordions -->
+            <div class="faq-main-column">
+                <h2 class="support-column-title">Frequently Asked Questions</h2>
+
+                <div class="faq-categories-list">
+                    {% for group in faq_groups %}
+                    <div class="faq-category-card" data-category="{{ group.category }}">
+                        <div class="faq-cat-header">
+                            <span class="faq-cat-icon">{{ group.icon }}</span>
+                            <h3>{{ group.category }}</h3>
+                        </div>
+
+                        <div class="faq-accordion-stack">
+                            {% for item in group.questions %}
+                            <div class="faq-accordion-item">
+                                <button type="button" class="faq-question-btn" onclick="toggleFaq(this)">
+                                    <span class="faq-q-text">{{ item.q }}</span>
+                                    <span class="faq-toggle-icon">+</span>
+                                </button>
+                                <div class="faq-answer-panel">
+                                    <p>{{ item.a }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right: Raise Support Ticket Card -->
+            <div class="ticket-form-column">
+                <div class="support-ticket-card">
+                    <div class="ticket-card-header">
+                        <span class="ticket-badge-icon">📩</span>
+                        <h3>Submit a Support Ticket</h3>
+                        <p class="text-muted">Can't find what you need? Our customer care specialists respond within 24 hours.</p>
+                    </div>
+
+                    <form action="{{ url_for('support.submit_ticket') }}" method="POST" class="support-ticket-form">
+                        <div class="form-group">
+                            <label for="ticket_name">Your Name *</label>
+                            <input type="text" id="ticket_name" name="customer_name" value="{{ session.get('user_name', '') }}" placeholder="Enter full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ticket_email">Email Address *</label>
+                            <input type="email" id="ticket_email" name="email" value="{{ session.get('user_email', '') }}" placeholder="name@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ticket_category">Issue Category *</label>
+                            <select id="ticket_category" name="category" required>
+                                <option value="Delivery & Tracking">Delivery &amp; Tracking</option>
+                                <option value="Refund & Cancellation">Refund &amp; Cancellation</option>
+                                <option value="Product Issue / Return">Product Issue / Return</option>
+                                <option value="Payment & Billing">Payment &amp; Billing</option>
+                                <option value="Festival Offers & Coupons">Festival Offers &amp; Coupons</option>
+                                <option value="Other">Other Inquiries</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ticket_order_ref">Order Reference (Optional)</label>
+                            <input type="text" id="ticket_order_ref" name="order_ref" placeholder="e.g. KART-20261031-1234">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ticket_subject">Subject *</label>
+                            <input type="text" id="ticket_subject" name="subject" placeholder="Brief summary of your inquiry" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ticket_message">Message Description *</label>
+                            <textarea id="ticket_message" name="message" rows="4" placeholder="Explain your issue in detail..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg">Submit Support Inquiry</button>
+                    </form>
+                </div>
+
+                <!-- Fast Contact Box -->
+                <div class="fast-contact-box">
+                    <h4>Direct Assistance</h4>
+                    <div class="contact-pill">
+                        <span>📞 Phone: 1800-KART-MART (Mon-Sat, 9AM-8PM)</span>
+                    </div>
+                    <div class="contact-pill">
+                        <span>✉️ Email: support@kartmart.com</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleFaq(btn) {
+    const item = btn.closest('.faq-accordion-item');
+    const isOpen = item.classList.contains('open');
+
+    // Close all siblings in category
+    item.closest('.faq-accordion-stack').querySelectorAll('.faq-accordion-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-toggle-icon').textContent = '+';
+    });
+
+    if (!isOpen) {
+        item.classList.add('open');
+        btn.querySelector('.faq-toggle-icon').textContent = '−';
+    }
+}
+
+function filterFaqs() {
+    const query = document.getElementById('faq-search-input').value.toLowerCase().trim();
+    const items = document.querySelectorAll('.faq-accordion-item');
+
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (!query || text.includes(query)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

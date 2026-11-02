@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings &amp; Profile — KARTMART{% endblock %}
+
+{% block content %}
+<div class="account-dashboard-page">
+    <div class="section-container">
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <span>My Account</span>
+        </nav>
+
+        <div class="account-layout-grid">
+            <!-- Left: Account Navigation Sidebar -->
+            <aside class="account-nav-sidebar">
+                <div class="account-user-card">
+                    <div class="avatar-circle">
+                        <span>{{ user.name[0]|upper }}</span>
+                    </div>
+                    <div class="user-meta">
+                        <h3>{{ user.name }}</h3>
+                        <span class="user-email-text">{{ user.email }}</span>
+                        <span class="user-role-badge">{% if user.is_admin %}🛡️ Administrator{% else %}⭐ Prime Member{% endif %}</span>
+                    </div>
+                </div>
+
+                <nav class="account-menu-nav">
+                    <a href="{{ url_for('account.profile') }}" class="account-menu-item active">
+                        <span class="menu-icon">👤</span>
+                        <span>Personal Profile</span>
+                    </a>
+                    <a href="{{ url_for('orders.history') }}" class="account-menu-item">
+                        <span class="menu-icon">📦</span>
+                        <span>Orders &amp; Shipments</span>
+                    </a>
+                    <a href="{{ url_for('account.cancellations') }}" class="account-menu-item">
+                        <span class="menu-icon">🛑</span>
+                        <span>Cancelled Orders</span>
+                    </a>
+                    <a href="{{ url_for('account.addresses') }}" class="account-menu-item">
+                        <span class="menu-icon">📍</span>
+                        <span>Delivery Addresses</span>
+                    </a>
+                    <a href="{{ url_for('account.wishlist') }}" class="account-menu-item">
+                        <span class="menu-icon">❤️</span>
+                        <span>Saved Wishlist</span>
+                    </a>
+                    <a href="{{ url_for('account.security') }}" class="account-menu-item">
+                        <span class="menu-icon">🔒</span>
+                        <span>Password &amp; Security</span>
+                    </a>
+                    <a href="{{ url_for('support.help_center') }}" class="account-menu-item">
+                        <span class="menu-icon">💬</span>
+                        <span>Help &amp; Support</span>
+                    </a>
+                    {% if user.is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="account-menu-item admin-menu-item">
+                        <span class="menu-icon">⚙️</span>
+                        <span>Admin Console</span>
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="account-menu-item text-danger">
+                        <span class="menu-icon">🚪</span>
+                        <span>Sign Out</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Right: Profile Content & Settings -->
+            <main class="account-main-content">
+                <!-- KPI Quick Summary Row -->
+                <div class="account-kpi-grid">
+                    <div class="acc-kpi-card">
+                        <span class="kpi-icon">📦</span>
+                        <div class="kpi-text">
+                            <span class="kpi-label">TOTAL ORDERS</span>
+                            <strong class="kpi-val">{{ orders_count }}</strong>
+                        </div>
+                    </div>
+                    <div class="acc-kpi-card">
+                        <span class="kpi-icon">❤️</span>
+                        <div class="kpi-text">
+                            <span class="kpi-label">WISHLIST ITEMS</span>
+                            <strong class="kpi-val">{{ wishlist_count }}</strong>
+                        </div>
+                    </div>
+                    <div class="acc-kpi-card">
+                        <span class="kpi-icon">📍</span>
+                        <div class="kpi-text">
+                            <span class="kpi-label">SAVED ADDRESSES</span>
+                            <strong class="kpi-val">{{ addresses|length }}</strong>
+                        </div>
+                    </div>
+                    <div class="acc-kpi-card">
+                        <span class="kpi-icon">💳</span>
+                        <div class="kpi-text">
+                            <span class="kpi-label">KARTMART WALLET</span>
+                            <strong class="kpi-val text-success">{{ currency }}500.00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information Card -->
+                <div class="acc-section-card">
+                    <div class="acc-card-header">
+                        <h2>Personal Information</h2>
+                        <span class="text-muted">Manage your name, verified email, and contact number.</span>
+                    </div>
+
+                    <form action="{{ url_for('account.update_profile') }}" method="POST" class="acc-profile-form">
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" value="{{ user.name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Mobile Number *</label>
+                                <input type="tel" id="phone" name="phone" value="{{ user.phone or '' }}" placeholder="e.g. 9812345678" pattern="[0-9]{10}">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address (Registered)</label>
+                            <input type="email" id="email" value="{{ user.email }}" disabled class="input-disabled">
+                            <span class="field-hint">Email address cannot be changed directly for security reasons.</span>
+                        </div>
+
+                        <div class="form-actions-right">
+                            <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Default Delivery Address Snapshot -->
+                <div class="acc-section-card">
+                    <div class="acc-card-header flex-between">
+                        <div>
+                            <h2>Default Delivery Address</h2>
+                            <span class="text-muted">Primary shipping address for 1-click checkout.</span>
+                        </div>
+                        <a href="{{ url_for('account.addresses') }}" class="btn btn-secondary btn-sm">Manage All Addresses &rarr;</a>
+                    </div>
+
+                    {% if addresses %}
+                    <div class="default-address-box">
+                        <div class="addr-type-chip">{{ addresses[0].address_type }}</div>
+                        <strong class="addr-name">{{ addresses[0].recipient_name }}</strong>
+                        <p class="addr-lines">
+                            {{ addresses[0].street_address }}<br>
+                            {% if addresses[0].landmark %}Landmark: {{ addresses[0].landmark }}<br>{% endif %}
+                            {{ addresses[0].city }}, {{ addresses[0].state }} - <strong>{{ addresses[0].pincode }}</strong>
+                        </p>
+                        <span class="addr-phone">Phone: {{ addresses[0].phone }}</span>
+                    </div>
+                    {% else %}
+                    <div class="empty-mini-card">
+                        <p>No delivery address saved yet.</p>
+                        <a href="{{ url_for('account.addresses') }}" class="btn btn-outline btn-sm">+ Add Delivery Address</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Recent Orders Snapshot -->
+                <div class="acc-section-card">
+                    <div class="acc-card-header flex-between">
+                        <div>
+                            <h2>Recent Orders</h2>
+                            <span class="text-muted">Your latest online shopping orders.</span>
+                        </div>
+                        <a href="{{ url_for('orders.history') }}" class="btn btn-secondary btn-sm">View All Orders &rarr;</a>
+                    </div>
+
+                    {% if recent_orders %}
+                    <div class="acc-recent-orders-list">
+                        {% for ord in recent_orders %}
+                        <div class="acc-order-item-row">
+                            <div class="acc-order-meta">
+                                <strong>{{ ord.order_ref }}</strong>
+                                <span>Placed on {{ ord.created_at.strftime('%d %b %Y') }} &bull; {{ currency }}{{ "{:,.2f}".format(ord.total_amount) }}</span>
+                            </div>
+                            <span class="status-pill status-{{ ord.order_status|lower|replace(' ', '-') }}">
+                                {{ ord.order_status }}
+                            </span>
+                            <a href="{{ url_for('orders.track', order_ref=ord.order_ref) }}" class="btn btn-secondary btn-sm">Track &rarr;</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-mini-card">
+                        <p>You have not placed any orders yet.</p>
+                        <a href="{{ url_for('products.catalogue') }}" class="btn btn-primary btn-sm">Explore Products</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}

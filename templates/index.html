@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}KARTMART — Next-Gen E-Commerce Experience{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" id="hero">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-icon">🚀</span>
+                <span class="badge-text">Spring 2026 Collection Live</span>
+            </div>
+            <h1 class="hero-title">
+                Shop the Future with <span class="gradient-text">KARTMART</span>
+            </h1>
+            <p class="hero-subtitle">
+                Explore an intuitive, high-performance shopping system. Built with Python Flask, SQLAlchemy, and responsive vanilla web technologies for a smooth shopping journey.
+            </p>
+            <div class="hero-cta-group">
+                <a href="#products-section" class="btn btn-primary btn-lg" id="hero-browse-btn">
+                    <span>Explore Products</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <a href="#system-status" class="btn btn-secondary btn-lg" id="hero-status-btn">
+                    <span>Inspect System</span>
+                </a>
+            </div>
+
+            <!-- Key Metric Highlights -->
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <span class="stat-number">5+</span>
+                    <span class="stat-label">Core Categories</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Server-Side Verified</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <span class="stat-number">2</span>
+                    <span class="stat-label">Payment Modes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="glass-card preview-card">
+                <div class="preview-header">
+                    <div class="preview-dot red"></div>
+                    <div class="preview-dot yellow"></div>
+                    <div class="preview-dot green"></div>
+                    <span class="preview-title">kartmart.local</span>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-banner">
+                        <span class="banner-tag">FEATURED DEAL</span>
+                        <h3>Smart Tech & Lifestyle</h3>
+                        <p>Simulated payments with zero risk</p>
+                    </div>
+                    <div class="preview-mock-items">
+                        <div class="mock-item">
+                            <span class="mock-icon">🎧</span>
+                            <div class="mock-info">
+                                <strong>Wireless Pro Headset</strong>
+                                <span>$149.99 &bull; In Stock</span>
+                            </div>
+                            <button class="mock-btn" onclick="simulateAddToCart('Wireless Pro Headset')">+</button>
+                        </div>
+                        <div class="mock-item">
+                            <span class="mock-icon">⌚</span>
+                            <div class="mock-info">
+                                <strong>Chronograph Horizon</strong>
+                                <span>$289.00 &bull; In Stock</span>
+                            </div>
+                            <button class="mock-btn" onclick="simulateAddToCart('Chronograph Horizon')">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trust & Feature Badges -->
+<section class="trust-bar">
+    <div class="trust-container">
+        <div class="trust-item">
+            <span class="trust-icon">⚡</span>
+            <div>
+                <h4>Fast Local Response</h4>
+                <p>Instant page loads backed by Flask & Jinja2</p>
+            </div>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">💳</span>
+            <div>
+                <h4>Simulated Checkout</h4>
+                <p>Safe test payments & Cash on Delivery</p>
+            </div>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">📦</span>
+            <div>
+                <h4>Real-Time Inventory</h4>
+                <p>Server-validated stock management</p>
+            </div>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">🛡️</span>
+            <div>
+                <h4>Data Integrity</h4>
+                <p>Transactional database consistency</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Categories Section -->
+<section class="section categories-section" id="categories-section">
+    <div class="section-container">
+        <div class="section-header">
+            <div>
+                <span class="section-tag">CATALOGUE</span>
+                <h2 class="section-title">Explore by Category</h2>
+            </div>
+            <p class="section-desc">Find exactly what you need with filtered browsing and instant search.</p>
+        </div>
+
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <div class="category-card" id="cat-card-{{ cat.id }}" tabindex="0">
+                <div class="category-icon-wrapper">
+                    <span class="category-icon">{{ cat.icon }}</span>
+                </div>
+                <h3 class="category-name">{{ cat.name }}</h3>
+                <p class="category-desc">{{ cat.description }}</p>
+                <div class="category-action">
+                    <span class="category-link">Browse collection &rarr;</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Showcase Products Section -->
+<section class="section products-section" id="products-section">
+    <div class="section-container">
+        <div class="section-header">
+            <div>
+                <span class="section-tag">CURATED PICKS</span>
+                <h2 class="section-title">Featured Products</h2>
+            </div>
+            <div class="filter-pills" id="category-filter-pills">
+                <button class="pill active" data-filter="all">All</button>
+                <button class="pill" data-filter="electronics">Electronics</button>
+                <button class="pill" data-filter="clothing">Clothing</button>
+                <button class="pill" data-filter="accessories">Accessories</button>
+            </div>
+        </div>
+
+        <div class="products-grid">
+            <!-- Product 1 -->
+            <article class="product-card" data-category="electronics" id="prod-card-1">
+                <div class="product-badge">Best Seller</div>
+                <div class="product-img-box">
+                    <span class="product-emoji">💻</span>
+                </div>
+                <div class="product-body">
+                    <span class="product-category">Electronics</span>
+                    <h3 class="product-title">UltraBook Pro 16-inch</h3>
+                    <p class="product-summary">32GB RAM, 1TB NVMe, stunning 4K Retina display for creators.</p>
+                    <div class="product-rating">
+                        <span class="stars">★★★★★</span>
+                        <span class="rating-count">(48 reviews)</span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="currency">$</span>1,299<span class="cents">.99</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm add-cart-btn" onclick="simulateAddToCart('UltraBook Pro 16-inch')">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Product 2 -->
+            <article class="product-card" data-category="electronics" id="prod-card-2">
+                <div class="product-badge">New Arrival</div>
+                <div class="product-img-box">
+                    <span class="product-emoji">🎧</span>
+                </div>
+                <div class="product-body">
+                    <span class="product-category">Electronics</span>
+                    <h3 class="product-title">Aura Acoustic Headphones</h3>
+                    <p class="product-summary">Active noise cancellation with 40-hour battery life & spatial audio.</p>
+                    <div class="product-rating">
+                        <span class="stars">★★★★☆</span>
+                        <span class="rating-count">(32 reviews)</span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="currency">$</span>189<span class="cents">.00</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm add-cart-btn" onclick="simulateAddToCart('Aura Acoustic Headphones')">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Product 3 -->
+            <article class="product-card" data-category="clothing" id="prod-card-3">
+                <div class="product-img-box">
+                    <span class="product-emoji">🧥</span>
+                </div>
+                <div class="product-body">
+                    <span class="product-category">Clothing</span>
+                    <h3 class="product-title">Merino Wool Overcoat</h3>
+                    <p class="product-summary">Tailored Italian cut with thermal lining for all-season elegance.</p>
+                    <div class="product-rating">
+                        <span class="stars">★★★★★</span>
+                        <span class="rating-count">(19 reviews)</span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="currency">$</span>249<span class="cents">.50</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm add-cart-btn" onclick="simulateAddToCart('Merino Wool Overcoat')">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Product 4 -->
+            <article class="product-card" data-category="accessories" id="prod-card-4">
+                <div class="product-badge">Popular</div>
+                <div class="product-img-box">
+                    <span class="product-emoji">⌚</span>
+                </div>
+                <div class="product-body">
+                    <span class="product-category">Accessories</span>
+                    <h3 class="product-title">Chronograph Automatic Watch</h3>
+                    <p class="product-summary">Sapphire crystal glass, 50m water resistance, genuine leather band.</p>
+                    <div class="product-rating">
+                        <span class="stars">★★★★★</span>
+                        <span class="rating-count">(64 reviews)</span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="currency">$</span>320<span class="cents">.00</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm add-cart-btn" onclick="simulateAddToCart('Chronograph Automatic Watch')">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- System Status & Architecture Card -->
+<section class="section status-section" id="system-status">
+    <div class="section-container">
+        <div class="glass-card status-card">
+            <div class="status-card-header">
+                <div>
+                    <span class="section-tag">LABORATORY SPEC</span>
+                    <h2 class="status-card-title">Live System & Architecture Status</h2>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="refresh-status-btn" onclick="checkLiveHealth()">
+                    <span>Refresh Status</span>
+                </button>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-tile">
+                    <div class="tile-icon">🌐</div>
+                    <div class="tile-details">
+                        <span class="tile-title">Backend Server</span>
+                        <span class="tile-value status-text-online">Active (Flask 3.1)</span>
+                        <span class="tile-hint">Host: 127.0.0.1:5000</span>
+                    </div>
+                </div>
+
+                <div class="status-tile">
+                    <div class="tile-icon">🗄️</div>
+                    <div class="tile-details">
+                        <span class="tile-title">Database Engine</span>
+                        <span class="tile-value" id="db-status-display">Checking...</span>
+                        <span class="tile-hint">{{ db_type }}: {{ db_masked }}</span>
+                    </div>
+                </div>
+
+                <div class="status-tile">
+                    <div class="tile-icon">🔐</div>
+                    <div class="tile-details">
+                        <span class="tile-title">Security & Sessions</span>
+                        <span class="tile-value status-text-online">Enabled</span>
+                        <span class="tile-hint">Server-side hashed credentials</span>
+                    </div>
+                </div>
+
+                <div class="status-tile">
+                    <div class="tile-icon">💳</div>
+                    <div class="tile-details">
+                        <span class="tile-title">Payment Gateways</span>
+                        <span class="tile-value status-text-online">Simulation Active</span>
+                        <span class="tile-hint">COD & Simulated Gateway ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-info-box">
+                <span class="api-badge">GET</span>
+                <code>/health</code>
+                <span class="api-response" id="api-health-preview">Pinging /health endpoint...</span>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

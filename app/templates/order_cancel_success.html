@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Order Cancelled — {{ order.order_ref }} | KARTMART{% endblock %}
+
+{% block content %}
+<div class="cancellation-success-page">
+    <div class="section-container max-w-700">
+        <div class="cancel-success-card">
+            <!-- Cancelled Pill & Icon -->
+            <div class="cancel-icon-circle">
+                <span>✕</span>
+            </div>
+
+            <span class="cancel-status-pill">ORDER CANCELLED</span>
+            <h1>Order {{ order.order_ref }} Has Been Cancelled</h1>
+            <p class="cancel-success-subtext">
+                Your cancellation request has been recorded and processed. Product stock has been restored.
+            </p>
+
+            <!-- Cancellation Summary Card -->
+            <div class="cancel-audit-box">
+                <div class="audit-row">
+                    <span class="audit-label">Order Reference:</span>
+                    <strong class="audit-val">{{ order.order_ref }}</strong>
+                </div>
+                <div class="audit-row">
+                    <span class="audit-label">Cancellation Date:</span>
+                    <span class="audit-val">{{ order.cancelled_at.strftime('%d %b %Y, %I:%M %p') if order.cancelled_at else 'Just now' }}</span>
+                </div>
+                <div class="audit-row">
+                    <span class="audit-label">Reason Recorded:</span>
+                    <strong class="audit-val text-warning">{{ order.cancellation_reason or 'Customer Request' }}</strong>
+                </div>
+                {% if order.cancellation_comments %}
+                <div class="audit-row">
+                    <span class="audit-label">Additional Comments:</span>
+                    <span class="audit-val font-italic">"{{ order.cancellation_comments }}"</span>
+                </div>
+                {% endif %}
+                <div class="audit-divider"></div>
+                <div class="audit-row">
+                    <span class="audit-label">Refund Status:</span>
+                    <strong class="audit-val text-success">{{ order.refund_status }}</strong>
+                </div>
+                {% if order.refund_ref %}
+                <div class="audit-row">
+                    <span class="audit-label">Refund Reference ID:</span>
+                    <strong class="audit-val text-primary">{{ order.refund_ref }}</strong>
+                </div>
+                {% endif %}
+                <div class="audit-row">
+                    <span class="audit-label">Amount Refunded:</span>
+                    <strong class="audit-val">{{ currency }}{{ "{:,.2f}".format(order.refund_amount) }}</strong>
+                </div>
+            </div>
+
+            <div class="btn-row-center">
+                <a href="{{ url_for('orders.history') }}" class="btn btn-secondary btn-lg">View Order History</a>
+                <a href="{{ url_for('products.catalogue') }}" class="btn btn-primary btn-lg">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

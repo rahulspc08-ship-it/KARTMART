@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: kartmart-ecommerce
+    env: python
+    buildCommand: pip install -r requirements.txt && python seed_catalog_expanded.py
+    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///instance/kartmart.db
+      - key: ADMIN_REGISTRATION_KEY
+        value: Admin@2026

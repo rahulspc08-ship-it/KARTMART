@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Order Details — {{ order.order_ref }} | KARTMART{% endblock %}
+
+{% block content %}
+<div class="order-detail-page">
+    <div class="section-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('orders.history') }}">Your Orders</a> &gt;
+            <span>Order # {{ order.order_ref }}</span>
+        </nav>
+
+        <div class="detail-header-card">
+            <div class="header-main-info">
+                <h1>Order Details</h1>
+                <span class="order-date-text">Ordered on {{ order.created_at.strftime('%d %B %Y at %I:%M %p') }} | Order # {{ order.order_ref }}</span>
+            </div>
+            <div class="header-action-links">
+                {% if order.can_be_cancelled() %}
+                <a href="{{ url_for('orders.cancel', order_ref=order.order_ref) }}" class="btn btn-outline btn-sm text-danger">
+                    <span>🛑 Cancel Order</span>
+                </a>
+                {% elif order.order_status == 'Cancelled' %}
+                <span class="badge badge-danger">Cancelled</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if order.order_status == 'Cancelled' %}
+        <!-- Cancellation Details Card -->
+        <div class="cancelled-order-banner">
+            <div class="cancel-banner-icon">🛑</div>
+            <div class="cancel-banner-info">
+                <h3>This order was cancelled on {{ order.cancelled_at.strftime('%d %b %Y at %I:%M %p') if order.cancelled_at else 'recently' }}</h3>
+                <p><strong>Reason:</strong> {{ order.cancellation_reason or 'Requested by customer' }}</p>
+                {% if order.cancellation_comments %}
+                <p class="font-italic">"{{ order.cancellation_comments }}"</p>
+                {% endif %}
+                <div class="cancel-refund-line">
+                    <span>Refund Status: <strong>{{ order.refund_status }}</strong></span>
+                    {% if order.refund_ref %}
+                    &bull; <span>Ref: <strong>{{ order.refund_ref }}</strong></span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Visual Tracking Timeline -->
+        <div class="tracking-timeline-card">
+            <h2>Package Delivery Tracking</h2>
+            <div class="timeline-stepper">
+                {% for node in timeline %}
+                <div class="timeline-step {{ node.state }}">
+                    <div class="step-circle">
+                        {% if node.state == 'completed' %}✓{% elif node.state == 'active' %}●{% elif node.state == 'cancelled' %}✕{% else %}○{% endif %}
+                    </div>
+                    <span class="step-title">{{ node.name }}</span>
+                </div>
+                {% if not loop.last %}
+                <div class="step-connector {% if node.state == 'completed' %}completed{% endif %}"></div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <div class="timeline-status-note">
+                Current Status: <strong class="status-text-highlight">{{ order.order_status }}</strong> &bull; Estimated delivery in 2-3 business days.
+            </div>
+        </div>
+
+        <div class="order-detail-grid">
+            <!-- Left: Items Ordered -->
+            <div class="order-items-column">
+                <div class="detail-section-card">
+                    <h3>Shipment Items</h3>
+                    <div class="shipment-items-table">
+                        {% for item in order.items %}
+                        <div class="shipment-item-row">
+                            <span class="item-emoji">{{ item.product_emoji }}</span>
+                            <div class="item-desc">
+                                <strong>{{ item.product_name }}</strong>
+                                <span>Quantity: {{ item.quantity }} &bull; {{ currency }}{{ "{:,.2f}".format(item.unit_price) }} each</span>
+                            </div>
+                            <strong class="item-subtotal-val">{{ currency }}{{ "{:,.2f}".format(item.line_total) }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Shipping Address Card -->
+                <div class="detail-section-card">
+                    <h3>Delivery Address</h3>
+                    <p class="address-text">
+                        <strong>{{ order.customer_name }}</strong><br>
+                        Phone: {{ order.phone }}<br>
+                        Email: {{ order.email }}<br>
+                        {{ order.shipping_address }}<br>
+                        {{ order.city }} - {{ order.pincode }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right: Payment & Summary -->
+            <div class="order-summary-column">
+                <div class="detail-section-card">
+                    <h3>Payment Information</h3>
+                    <div class="payment-info-box">
+                        <div class="pay-info-row">
+                            <span>Payment Method:</span>
+                            <strong>{{ order.payment_method }}</strong>
+                        </div>
+                        <div class="pay-info-row">
+                            <span>Payment Status:</span>
+                            <strong class="text-success">{{ order.payment_status }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+                    <h3>Order Summary</h3>
+                    
+                    <div class="summary-row">
+                        <span>Items Subtotal:</span>
+                        <span>{{ currency }}{{ "{:,.2f}".format(order.subtotal) }}</span>
+                    </div>
+
+                    {% if order.discount_amount > 0 %}
+                    <div class="summary-row text-success">
+                        <span>Discount ({{ order.coupon_code }}):</span>
+                        <span>-{{ currency }}{{ "{:,.2f}".format(order.discount_amount) }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="summary-row">
+                        <span>Delivery Fee:</span>
+                        <span>{% if order.delivery_fee == 0 %}FREE{% else %}{{ currency }}{{ "{:,.2f}".format(order.delivery_fee) }}{% endif %}</span>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row total-highlight-row">
+                        <span>Grand Total:</span>
+                        <strong class="total-big">{{ currency }}{{ "{:,.2f}".format(order.total_amount) }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

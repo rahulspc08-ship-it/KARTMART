@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}KARTMART — The Modern E-Commerce Destination | Curated Shopping{% endblock %}
+
+{% block content %}
+<!-- Luxury Hero Editorial Banner -->
+<section class="km-hero-section">
+    <div class="hero-backdrop-glow"></div>
+    <div class="section-container hero-container">
+        <div class="hero-content">
+            <div class="festive-live-pill">
+                <span class="pulse-dot"></span>
+                <span>✦ PREMIUM CURATED LIFESTYLE &amp; TECH</span>
+            </div>
+            <h1 class="hero-headline">
+                The Next Generation of <span class="gradient-text">Curated Shopping</span>
+            </h1>
+            <p class="hero-subtext">
+                Explore authentic electronics, designer fashion, luxury furniture, beauty essentials, and sports gear with instant checkout and verified doorstep delivery.
+            </p>
+
+            <div class="hero-actions">
+                <a href="{{ url_for('products.catalogue') }}" class="btn btn-primary btn-lg">
+                    <span>Explore All 13 Categories</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <a href="#categories-showcase" class="btn btn-secondary btn-lg">
+                    <span>Browse Visual Categories</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-visual-card">
+            <div class="hero-featured-deal">
+                <img src="{{ url_for('static', filename='img/products/gaming_laptop.jpg') }}" alt="Featured Tech &amp; Design" class="hero-deal-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';">
+                <div class="hero-deal-overlay">
+                    <span class="deal-tag">FLAGSHIP SHOWCASE</span>
+                    <h3>Curated Collections Across 13 Categories</h3>
+                    <p>Genuine manufacturer photography, verified stock, and instant simulated checkout.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Active Promotional Coupons Strip -->
+<section class="km-coupons-strip" id="festive-coupons">
+    <div class="section-container">
+        <div class="coupons-header-row">
+            <div>
+                <span class="pill-tag">VERIFIED SAVINGS</span>
+                <h2 class="section-title">Special Offers &amp; Instant Promo Codes</h2>
+            </div>
+            <span class="coupons-note">Tap any coupon to copy &amp; apply automatically during checkout!</span>
+        </div>
+
+        <div class="coupons-scroller">
+            {% for coupon in active_coupons %}
+            <div class="km-coupon-card" onclick="copyCoupon('{{ coupon.code }}')" role="button" tabindex="0" title="Click to copy coupon code">
+                <div class="coupon-badge">{{ coupon.discount_percent }}% OFF</div>
+                <div class="coupon-details">
+                    <div class="coupon-code-wrap">
+                        <strong class="coupon-code-text">{{ coupon.code }}</strong>
+                        <span class="copy-icon">📋</span>
+                    </div>
+                    <p class="coupon-desc">{{ coupon.description }}</p>
+                    <span class="coupon-min-spend">Min. cart: {{ currency }}{{ "{:,.0f}".format(coupon.min_order_amount) }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 1. All Product Categories with High-Quality Genuine Photographs -->
+<section class="km-categories-section" id="categories-showcase">
+    <div class="section-container">
+        <div class="section-header-row">
+            <div>
+                <span class="pill-tag">GENUINE CATEGORY VISUALS</span>
+                <h2 class="section-title">Shop by Category (12 Featured Collections)</h2>
+            </div>
+            <a href="{{ url_for('products.catalogue') }}" class="view-all-cta">Browse Full Catalogue &rarr;</a>
+        </div>
+
+        <div class="km-category-cards-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('products.catalogue', category=cat.slug) }}" class="km-category-card" id="cat-card-{{ cat.slug }}">
+                <div class="category-image-wrap">
+                    <img src="{{ cat.image_url or ('/static/img/categories/cat_' + cat.slug + '.jpg') }}" 
+                         alt="{{ cat.name }} Collection" 
+                         class="category-photo" 
+                         onerror="this.onerror=null;this.src='/static/img/categories/cat_fallback.jpg';" 
+                         loading="lazy">
+                    <div class="category-badge-chip">{{ cat.icon }}</div>
+                </div>
+                <div class="category-card-info">
+                    <h3 class="category-title">{{ cat.name }}</h3>
+                    <span class="category-count-pill">{{ cat.products.count() }} Products &rarr;</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 2. Trending Products with Genuine Photographs, Rating, Discount & View Product -->
+<section class="km-trending-section" id="trending-section">
+    <div class="section-container">
+        <div class="section-header-row">
+            <div>
+                <span class="pill-tag">🔥 WHAT'S POPULAR</span>
+                <h2 class="section-title">Trending Products</h2>
+            </div>
+            <a href="{{ url_for('products.catalogue') }}" class="view-all-cta">View All Trending &rarr;</a>
+        </div>
+
+        <div class="products-grid">
+            {% for prod in trending_products %}
+            <article class="product-card" id="trending-card-{{ prod.id }}">
+                <div class="product-card-top">
+                    {% if prod.badge %}
+                    <span class="product-badge">{{ prod.badge }}</span>
+                    {% else %}
+                    <span class="product-badge subtle-badge">🔥 Trending</span>
+                    {% endif %}
+                    <button type="button" class="wishlist-toggle-btn {% if prod.id in wishlist_ids %}active{% endif %}" onclick="toggleWishlist({{ prod.id }}, this)" aria-label="Save to Wishlist" title="Save to Wishlist">
+                        <span class="heart-icon">♥</span>
+                    </button>
+                </div>
+
+                <a href="{{ url_for('products.detail', product_id=prod.id) }}" class="product-media-link">
+                    <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
+                </a>
+
+                <div class="product-card-body">
+                    <div class="product-meta-row">
+                        <span class="product-brand">{{ prod.brand or 'KARTMART' }}</span>
+                        <span class="product-category-crumb">{{ prod.category.name if prod.category else '' }}</span>
+                    </div>
+
+                    <h3 class="product-card-title">
+                        <a href="{{ url_for('products.detail', product_id=prod.id) }}">{{ prod.name }}</a>
+                    </h3>
+
+                    <div class="product-rating-row">
+                        <span class="rating-stars">★ {{ prod.rating }}</span>
+                        <span class="reviews-count">({{ prod.reviews_count }} reviews)</span>
+                    </div>
+
+                    <div class="product-pricing-row">
+                        <span class="selling-price">{{ currency }}{{ "{:,.2f}".format(prod.price) }}</span>
+                        {% if prod.original_price and prod.discount_percent > 0 %}
+                        <span class="mrp-price">{{ currency }}{{ "{:,.2f}".format(prod.original_price) }}</span>
+                        <span class="discount-pill">{{ prod.discount_percent }}% OFF</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-stock-status {% if prod.stock < 5 %}low-stock{% endif %}">
+                        {% if prod.stock < 5 %}
+                        ⚠️ Only {{ prod.stock }} units remaining!
+                        {% else %}
+                        ✅ In Stock &bull; Free Express Delivery
+                        {% endif %}
+                    </div>
+
+                    <div class="product-card-actions">
+                        <a href="{{ url_for('products.detail', product_id=prod.id) }}" class="btn btn-secondary btn-sm btn-view-prod">
+                            <span>View Product &rarr;</span>
+                        </a>
+                        <button type="button" class="btn btn-outline btn-sm btn-cart" onclick="quickAddToCart({{ prod.id }}, '{{ prod.name|replace("'", "\\'") }}')">
+                            <span>Add to Bag</span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 3. Most Loved Products with Genuine Photographs, Rating, Discount & Add to Bag -->
+<section class="km-loved-section" id="most-loved-section">
+    <div class="section-container">
+        <div class="section-header-row">
+            <div>
+                <span class="pill-tag">❤️ TOP RATED BY CUSTOMERS</span>
+                <h2 class="section-title">Most Loved Products</h2>
+            </div>
+            <a href="{{ url_for('products.catalogue', sort='rating') }}" class="view-all-cta">See Top Rated &rarr;</a>
+        </div>
+
+        <div class="products-grid">
+            {% for prod in most_loved_products %}
+            <article class="product-card" id="loved-card-{{ prod.id }}">
+                <div class="product-card-top">
+                    <span class="product-badge loved-badge">❤️ Top Rated</span>
+                    <button type="button" class="wishlist-toggle-btn {% if prod.id in wishlist_ids %}active{% endif %}" onclick="toggleWishlist({{ prod.id }}, this)" aria-label="Save to Wishlist" title="Save to Wishlist">
+                        <span class="heart-icon">♥</span>
+                    </button>
+                </div>
+
+                <a href="{{ url_for('products.detail', product_id=prod.id) }}" class="product-media-link">
+                    <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
+                </a>
+
+                <div class="product-card-body">
+                    <div class="product-meta-row">
+                        <span class="product-brand">{{ prod.brand or 'KARTMART' }}</span>
+                        <span class="product-category-crumb">{{ prod.category.name if prod.category else '' }}</span>
+                    </div>
+
+                    <h3 class="product-card-title">
+                        <a href="{{ url_for('products.detail', product_id=prod.id) }}">{{ prod.name }}</a>
+                    </h3>
+
+                    <div class="product-rating-row">
+                        <span class="rating-stars gold-stars">★ {{ prod.rating }}</span>
+                        <span class="reviews-count">({{ prod.reviews_count }} verified buyers)</span>
+                    </div>
+
+                    <div class="product-pricing-row">
+                        <span class="selling-price">{{ currency }}{{ "{:,.2f}".format(prod.price) }}</span>
+                        {% if prod.original_price and prod.discount_percent > 0 %}
+                        <span class="mrp-price">{{ currency }}{{ "{:,.2f}".format(prod.original_price) }}</span>
+                        <span class="discount-pill">{{ prod.discount_percent }}% OFF</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-stock-status">
+                        ✅ In Stock &bull; 7-Day Hassle-Free Returns
+                    </div>
+
+                    <div class="product-card-actions">
+                        <button type="button" class="btn btn-primary btn-sm btn-cart" onclick="quickAddToCart({{ prod.id }}, '{{ prod.name|replace("'", "\\'") }}')">
+                            <span>Add to Bag</span>
+                        </button>
+                        <a href="{{ url_for('checkout.buy_now', product_id=prod.id) }}" class="btn btn-secondary btn-sm btn-buy-now">
+                            <span>⚡ Buy Now</span>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 4-Pillar Customer Trust & Assurance Section -->
+<section class="km-trust-section">
+    <div class="section-container">
+        <div class="trust-grid">
+            <div class="trust-card">
+                <div class="trust-icon-wrap">🛡️</div>
+                <div class="trust-content">
+                    <h3>100% Authentic Guarantee</h3>
+                    <p>Every product is sourced directly from verified brand manufacturers and certified distributors.</p>
+                </div>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-icon-wrap">⚡</div>
+                <div class="trust-content">
+                    <h3>Free Express Shipping</h3>
+                    <p>Fast dispatch and complimentary expedited doorstep delivery on all orders over {{ currency }}499.</p>
+                </div>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-icon-wrap">🔄</div>
+                <div class="trust-content">
+                    <h3>7-Day Hassle-Free Returns</h3>
+                    <p>Transparent multi-step cancellation with automatic inventory replenishment and simulated instant refunds.</p>
+                </div>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-icon-wrap">🔒</div>
+                <div class="trust-content">
+                    <h3>Bank-Grade Payment Security</h3>
+                    <p>Safe simulated UPI, debit/credit cards, and Cash on Delivery with end-to-end encrypted processing.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

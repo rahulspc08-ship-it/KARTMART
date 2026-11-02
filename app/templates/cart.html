@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Your Shopping Bag ({{ cart.total_items }} Items) — KARTMART{% endblock %}
+
+{% block content %}
+<div class="cart-page-wrapper">
+    <div class="section-container">
+        <div class="cart-header-row">
+            <div>
+                <span class="pill-tag">REVIEW ORDER</span>
+                <h1 class="page-main-heading">Shopping Bag</h1>
+            </div>
+            {% if cart.cart_items %}
+            <a href="{{ url_for('cart.clear') }}" class="clear-cart-link" onclick="return confirm('Remove all items from your shopping bag?')">Clear All Items</a>
+            {% endif %}
+        </div>
+
+        {% if cart.cart_items %}
+        <!-- Free Delivery Progress Meter -->
+        <div class="cart-progress-box">
+            <div class="progress-info-line">
+                {% if cart.subtotal >= 499.0 %}
+                <span class="text-success font-weight-bold">🎉 Congratulations! Your order qualifies for FREE Express Delivery.</span>
+                {% else %}
+                <span>Add <strong>{{ currency }}{{ "{:,.2f}".format(499.0 - cart.subtotal) }}</strong> more to unlock <strong>FREE Express Delivery</strong></span>
+                {% endif %}
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {{ [((cart.subtotal / 499.0) * 100)|round, 100]|min }}%;"></div>
+            </div>
+        </div>
+
+        <div class="cart-layout-grid">
+            <!-- Left: Cart Items List -->
+            <div class="cart-items-column">
+                <div class="cart-item-cards">
+                    {% for item in cart.cart_items %}
+                    <div class="cart-row-card" id="cart-item-{{ item.id }}">
+                        <div class="cart-row-media">
+                            <img src="{{ item.product.image_url if item.product else '/static/img/products/fallback.jpg' }}" alt="{{ item.product.name if item.product else 'Item' }}" class="cart-item-thumbnail" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';">
+                        </div>
+
+                        <div class="cart-row-details">
+                            <div class="cart-row-header-line">
+                                <span class="cart-item-brand">{{ item.product.brand if item.product and item.product.brand else 'KARTMART' }}</span>
+                                <h3 class="cart-row-title">
+                                    <a href="{{ url_for('products.detail', product_id=item.product.id) }}">{{ item.product.name }}</a>
+                                </h3>
+                            </div>
+
+                            <div class="cart-row-stock-tag">
+                                {% if item.product.stock > 0 %}
+                                <span class="text-success">✅ In Stock (Ready to dispatch)</span>
+                                {% else %}
+                                <span class="text-danger">❌ Out of Stock</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="cart-row-unit-price">
+                                Unit Price: <strong>{{ currency }}{{ "{:,.2f}".format(item.product.price) }}</strong>
+                            </div>
+
+                            <div class="cart-row-controls">
+                                <!-- Stepper -->
+                                <div class="quantity-control-stepper">
+                                    <form action="{{ url_for('cart.update', item_id=item.id) }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
+                                        <button type="submit" class="step-btn minus" {% if item.quantity <= 1 %}disabled{% endif %} aria-label="Decrease quantity">-</button>
+                                    </form>
+                                    <span class="qty-display">{{ item.quantity }}</span>
+                                    <form action="{{ url_for('cart.update', item_id=item.id) }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
+                                        <button type="submit" class="step-btn plus" {% if item.quantity >= item.product.stock %}disabled{% endif %} aria-label="Increase quantity">+</button>
+                                    </form>
+                                </div>
+
+                                <span class="control-divider">|</span>
+                                <a href="{{ url_for('cart.remove', item_id=item.id) }}" class="cart-remove-link">Delete Item</a>
+                            </div>
+                        </div>
+
+                        <div class="cart-row-subtotal">
+                            <span class="subtotal-label">Subtotal</span>
+                            <span class="subtotal-amount">{{ currency }}{{ "{:,.2f}".format(item.subtotal) }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right: Order Summary Sidebar -->
+            <div class="cart-summary-column">
+                <div class="price-summary-card">
+                    <h2 class="summary-card-title">PRICE BREAKDOWN</h2>
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row">
+                        <span>Items Subtotal ({{ cart.total_items }} items)</span>
+                        <span>{{ currency }}{{ "{:,.2f}".format(cart.subtotal) }}</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Estimated Delivery</span>
+                        {% if cart.delivery_fee == 0 %}
+                        <span class="text-success font-weight-bold">FREE</span>
+                        {% else %}
+                        <span>{{ currency }}{{ "{:,.2f}".format(cart.delivery_fee) }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row total-highlight-row">
+                        <span>Total Payable</span>
+                        <span class="total-big">{{ currency }}{{ "{:,.2f}".format(cart.total) }}</span>
+                    </div>
+
+                    <div class="checkout-cta-wrap">
+                        <a href="{{ url_for('checkout.index') }}" class="btn btn-primary btn-block btn-lg" id="cart-proceed-checkout-btn">
+                            <span>Proceed to Checkout</span>
+                            <span class="btn-arrow">→</span>
+                        </a>
+                    </div>
+
+                    <div class="summary-trust-badge">
+                        <span>🛡️ Safe &amp; Secure 256-Bit SSL Checkout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty Cart State -->
+        <div class="empty-cart-card">
+            <div class="empty-cart-icon">🛍️</div>
+            <h2>Your shopping bag is empty</h2>
+            <p>Explore our curated collections, Diwali Dhamaka deals, and bestselling tech &amp; fashion.</p>
+            <a href="{{ url_for('products.catalogue') }}" class="btn btn-primary btn-lg">
+                <span>Start Exploring Catalogue</span>
+                <span class="btn-arrow">→</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

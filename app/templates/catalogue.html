@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}{% if diwali_filter %}Diwali Deals &amp; Offers — KARTMART{% elif selected_category %}{{ selected_category.name }} — KARTMART{% else %}Curated Product Catalogue — KARTMART{% endif %}{% endblock %}
+
+{% block content %}
+<div class="catalogue-page-wrapper">
+    <div class="section-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('products.catalogue') }}">Catalogue</a>
+            {% if selected_category %} &gt; <span class="active-crumb">{{ selected_category.name }}</span>{% endif %}
+            {% if diwali_filter %} &gt; <span class="active-crumb">🪔 Diwali Deals</span>{% endif %}
+        </nav>
+
+        <div class="catalogue-layout-grid">
+            <!-- Left: Filter Sidebar -->
+            <aside class="catalogue-sidebar">
+                <div class="filter-panel-card">
+                    <div class="filter-group-header">
+                        <h3>Collections</h3>
+                        <a href="{{ url_for('products.catalogue') }}" class="filter-reset-link">Reset</a>
+                    </div>
+
+                    <!-- Festive Quick Filter -->
+                    <div class="festive-filter-box">
+                        <a href="{{ url_for('products.catalogue', festive='true') }}" class="festive-filter-pill {% if diwali_filter %}active{% endif %}">
+                            <span>🪔 Diwali Dhamaka Deals</span>
+                            <span class="festive-dot"></span>
+                        </a>
+                    </div>
+
+                    <ul class="category-filter-list">
+                        <li>
+                            <a href="{{ url_for('products.catalogue', q=search_query) }}" class="cat-filter-link {% if not selected_category and not diwali_filter %}active{% endif %}">
+                                <span>✦ All 13 Categories</span>
+                            </a>
+                        </li>
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{{ url_for('products.catalogue', category=cat.slug, q=search_query) }}" class="cat-filter-link {% if selected_category and selected_category.id == cat.id %}active{% endif %}">
+                                <span class="cat-link-label">{{ cat.icon }} {{ cat.name }}</span>
+                                <span class="cat-pill-count">{{ cat.products.count() }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="filter-divider"></div>
+
+                    <h3>Customer Rating</h3>
+                    <ul class="rating-filter-list">
+                        <li><a href="{{ url_for('products.catalogue', category=selected_category.slug if selected_category else None, sort='rating') }}" class="rating-link">★★★★☆ &amp; above</a></li>
+                        <li><a href="{{ url_for('products.catalogue', category=selected_category.slug if selected_category else None, sort='rating') }}" class="rating-link">★★★☆☆ &amp; above</a></li>
+                    </ul>
+
+                    <div class="filter-divider"></div>
+
+                    <h3>Assurance</h3>
+                    <div class="filter-perk-item">
+                        <span>⚡</span>
+                        <span>Free Express Delivery (₹499+)</span>
+                    </div>
+                    <div class="filter-perk-item">
+                        <span>🔄</span>
+                        <span>7-Day Return Policy</span>
+                    </div>
+                    <div class="filter-perk-item">
+                        <span>💵</span>
+                        <span>Cash on Delivery Eligible</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right: Products Grid -->
+            <div class="catalogue-main-column">
+                <div class="catalogue-top-bar">
+                    <div class="results-count-text">
+                        Showing <strong>{{ products|length }}</strong> curated products
+                        {% if search_query %} for <span class="search-term-highlight">"{{ search_query }}"</span>{% endif %}
+                        {% if selected_category %} in <strong>{{ selected_category.name }}</strong>{% endif %}
+                        {% if diwali_filter %} with <strong>Festive Diwali Discount</strong>{% endif %}
+                    </div>
+
+                    <!-- Sort Dropdown -->
+                    <div class="sort-control-group">
+                        <label for="sort-select">Sort by:</label>
+                        <select id="sort-select" onchange="location = this.value;">
+                            <option value="{{ url_for('products.catalogue', category=selected_category.slug if selected_category else None, q=search_query, festive='true' if diwali_filter else None, sort='featured') }}" {% if sort_by == 'featured' %}selected{% endif %}>Featured</option>
+                            <option value="{{ url_for('products.catalogue', category=selected_category.slug if selected_category else None, q=search_query, festive='true' if diwali_filter else None, sort='price_low') }}" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="{{ url_for('products.catalogue', category=selected_category.slug if selected_category else None, q=search_query, festive='true' if diwali_filter else None, sort='price_high') }}" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="{{ url_for('products.catalogue', category=selected_category.slug if selected_category else None, q=search_query, festive='true' if diwali_filter else None, sort='rating') }}" {% if sort_by == 'rating' %}selected{% endif %}>Highest Rated</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% if products %}
+                <div class="products-grid">
+                    {% for prod in products %}
+                    <article class="product-card" id="product-card-{{ prod.id }}">
+                        <div class="product-card-top">
+                            {% if prod.is_diwali_deal %}
+                            <span class="product-badge festive-badge">🪔 Diwali Deal</span>
+                            {% elif prod.badge %}
+                            <span class="product-badge">{{ prod.badge }}</span>
+                            {% else %}
+                            <span class="product-badge subtle-badge">{{ prod.brand or 'Curated' }}</span>
+                            {% endif %}
+                            <button type="button" class="wishlist-toggle-btn {% if prod.id in wishlist_ids %}active{% endif %}" onclick="toggleWishlist({{ prod.id }}, this)" aria-label="Save to Wishlist" title="Save to Wishlist">
+                                <span class="heart-icon">♥</span>
+                            </button>
+                        </div>
+
+                        <a href="{{ url_for('products.detail', product_id=prod.id) }}" class="product-media-link">
+                            <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
+                        </a>
+
+                        <div class="product-card-body">
+                            <div class="product-meta-row">
+                                <span class="product-brand">{{ prod.brand or 'KARTMART' }}</span>
+                                <span class="product-category-crumb">{{ prod.category.name if prod.category else '' }}</span>
+                            </div>
+
+                            <h3 class="product-card-title">
+                                <a href="{{ url_for('products.detail', product_id=prod.id) }}">{{ prod.name }}</a>
+                            </h3>
+
+                            <div class="product-rating-row">
+                                <span class="rating-stars">★ {{ prod.rating }}</span>
+                                <span class="reviews-count">({{ prod.reviews_count }})</span>
+                            </div>
+
+                            <div class="product-pricing-row">
+                                <span class="selling-price">{{ currency }}{{ "{:,.2f}".format(prod.price) }}</span>
+                                {% if prod.original_price %}
+                                <span class="mrp-price">{{ currency }}{{ "{:,.2f}".format(prod.original_price) }}</span>
+                                <span class="discount-pill">{{ prod.discount_percent }}% OFF</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="product-stock-status {% if prod.stock < 5 %}low-stock{% endif %}">
+                                {% if prod.stock < 5 %}
+                                ⚠️ Only {{ prod.stock }} left in stock!
+                                {% else %}
+                                ✅ In Stock &bull; Free Delivery
+                                {% endif %}
+                            </div>
+
+                            <div class="product-card-actions">
+                                <button type="button" class="btn btn-outline btn-sm btn-cart" onclick="quickAddToCart({{ prod.id }}, '{{ prod.name|replace("'", "\\'") }}')">
+                                    <span>Add to Bag</span>
+                                </button>
+                                <a href="{{ url_for('checkout.buy_now', product_id=prod.id) }}" class="btn btn-primary btn-sm btn-buy-now">
+                                    <span>⚡ Buy Now</span>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-products-card">
+                    <span class="no-products-icon">🔍</span>
+                    <h2>No products found matching your search</h2>
+                    <p>We couldn't find any products matching your current filters. Try expanding your search terms or view our all-collection catalogue.</p>
+                    <a href="{{ url_for('products.catalogue') }}" class="btn btn-primary">Browse All Collections</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

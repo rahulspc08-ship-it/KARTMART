@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Orders — KARTMART Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-wrapper">
+    <div class="section-container">
+        <div class="admin-top-banner">
+            <div>
+                <a href="{{ url_for('admin.dashboard') }}" class="back-link">&larr; Back to Admin Dashboard</a>
+                <h1>Manage All Orders</h1>
+            </div>
+            <!-- Status Filter -->
+            <div class="admin-filter-tabs">
+                <a href="{{ url_for('admin.orders') }}" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">All</a>
+                <a href="{{ url_for('admin.orders', status='Placed') }}" class="filter-tab {% if status_filter == 'Placed' %}active{% endif %}">Placed</a>
+                <a href="{{ url_for('admin.orders', status='Confirmed') }}" class="filter-tab {% if status_filter == 'Confirmed' %}active{% endif %}">Confirmed</a>
+                <a href="{{ url_for('admin.orders', status='Shipped') }}" class="filter-tab {% if status_filter == 'Shipped' %}active{% endif %}">Shipped</a>
+                <a href="{{ url_for('admin.orders', status='Delivered') }}" class="filter-tab {% if status_filter == 'Delivered' %}active{% endif %}">Delivered</a>
+                <a href="{{ url_for('admin.orders', status='Cancelled') }}" class="filter-tab {% if status_filter == 'Cancelled' %}active{% endif %}">Cancelled</a>
+            </div>
+        </div>
+
+        <div class="admin-section-panel">
+            {% if orders %}
+            <div class="admin-table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order Ref</th>
+                            <th>Customer &amp; Contact</th>
+                            <th>Delivery Address</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in orders %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('orders.track', order_ref=ord.order_ref) }}" class="table-order-link font-weight-bold">
+                                    {{ ord.order_ref }}
+                                </a>
+                                <br><small class="text-muted">{{ ord.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ ord.customer_name }}</strong><br>
+                                <small>{{ ord.phone }} &bull; {{ ord.email }}</small>
+                            </td>
+                            <td>
+                                <small>{{ ord.shipping_address }}, {{ ord.city }} - {{ ord.pincode }}</small>
+                            </td>
+                            <td>
+                                <span>{{ ord.items|length }} items</span>
+                            </td>
+                            <td><strong>{{ currency }}{{ "{:,.2f}".format(ord.total_amount) }}</strong></td>
+                            <td>
+                                <span>{{ ord.payment_method }}</span><br>
+                                <span class="badge badge-subtle">{{ ord.payment_status }}</span>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('admin.update_status', order_id=ord.id) }}" method="POST" class="status-change-form">
+                                    <select name="order_status" class="admin-status-select" onchange="this.form.submit()">
+                                        <option value="Placed" {% if ord.order_status == 'Placed' %}selected{% endif %}>Placed</option>
+                                        <option value="Confirmed" {% if ord.order_status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                        <option value="Shipped" {% if ord.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                        <option value="Out for Delivery" {% if ord.order_status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                                        <option value="Delivered" {% if ord.order_status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                        <option value="Cancelled" {% if ord.order_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted p-20">No orders match this status filter.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

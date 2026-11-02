@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Support Desk — KARTMART Admin{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-wrapper">
+    <div class="section-container">
+        <div class="admin-top-banner">
+            <div>
+                <span class="admin-badge">CUSTOMER CARE</span>
+                <h1>Customer Support Inquiries &amp; Tickets ({{ tickets|length }})</h1>
+            </div>
+            <div class="admin-header-actions">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">&larr; Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="admin-data-table">
+                    <thead>
+                        <tr>
+                            <th>Ticket Ref</th>
+                            <th>Customer</th>
+                            <th>Category</th>
+                            <th>Subject &amp; Message</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tickets %}
+                        <tr>
+                            <td><strong class="code-pill">{{ t.ticket_ref }}</strong></td>
+                            <td>
+                                <strong>{{ t.customer_name }}</strong>
+                                <div class="text-muted"><small>{{ t.email }}</small></div>
+                                {% if t.order_ref %}
+                                <div class="text-primary"><small>Order: {{ t.order_ref }}</small></div>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge badge-secondary">{{ t.category }}</span></td>
+                            <td class="max-w-300">
+                                <strong>{{ t.subject }}</strong>
+                                <p class="text-muted message-preview">{{ t.message }}</p>
+                                {% if t.admin_response %}
+                                <div class="admin-response-box">
+                                    <small><strong>Response:</strong> {{ t.admin_response }}</small>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.created_at.strftime('%d %b, %I:%M %p') }}</td>
+                            <td>
+                                {% if t.status == 'Resolved' %}
+                                <span class="badge badge-success">Resolved</span>
+                                {% else %}
+                                <span class="badge badge-warning">Open</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if t.status != 'Resolved' %}
+                                <form action="{{ url_for('admin.resolve_ticket', ticket_id=t.id) }}" method="POST">
+                                    <input type="text" name="admin_response" placeholder="Resolution notes..." class="form-control-sm mb-1" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Resolve</button>
+                                </form>
+                                {% else %}
+                                <span class="text-success font-weight-bold">✓ Closed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">No support tickets found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

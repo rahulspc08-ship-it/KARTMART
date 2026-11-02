@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Terms &amp; Conditions — KARTMART{% endblock %}
+
+{% block content %}
+<div class="legal-page-wrapper">
+    <div class="section-container max-w-800">
+        <div class="legal-card">
+            <h1>Terms &amp; Conditions</h1>
+            <p class="legal-date">Last Updated: October 2026</p>
+
+            <section class="legal-section">
+                <h2>1. Acceptance of Terms</h2>
+                <p>Welcome to KARTMART. By browsing, creating an account, or placing orders on our website, you agree to be bound by these Terms and Conditions.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>2. Purchases, Pricing &amp; Festive Offers</h2>
+                <p>All prices listed on the website are inclusive of taxes where applicable. Promotional coupons (such as DIWALI50 or FESTIVEGOLD) are valid only within their active campaign windows and cannot be combined or applied after their stated expiry dates.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>3. Order Cancellations &amp; Returns</h2>
+                <p>Orders may be cancelled free of charge while in "Placed" or "Confirmed" status through your order tracking portal. Orders that have already been dispatched or delivered cannot be cancelled in-transit, but are eligible for return requests in accordance with our 7-day return policy.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>4. Simulated Payments &amp; Delivery</h2>
+                <p>Payment options including Simulated UPI, Simulated Credit/Debit Card, and Cash on Delivery are provided to ensure a safe shopping experience. Standard orders are dispatched to your selected address within 2-3 business days.</p>
+            </section>
+
+            <div class="btn-row-center">
+                <a href="{{ url_for('support.help_center') }}" class="btn btn-secondary">Back to Help Center</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

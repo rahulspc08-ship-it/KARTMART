@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} — Buy Online | KARTMART{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <div class="section-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <a href="{{ url_for('products.index') }}">Home</a> &gt;
+            <a href="{{ url_for('products.catalogue') }}">Catalogue</a> &gt;
+            {% if product.category %}
+            <a href="{{ url_for('products.catalogue', category=product.category.slug) }}">{{ product.category.name }}</a> &gt;
+            {% endif %}
+            <span class="active-crumb">{{ product.name }}</span>
+        </nav>
+
+        <div class="product-detail-layout">
+            <!-- Left: High-Res Visual Gallery -->
+            <div class="detail-media-column">
+                <div class="detail-image-card">
+                    {% if product.is_diwali_deal %}
+                    <span class="detail-badge-pill festive-badge">🪔 Diwali Special Deal</span>
+                    {% elif product.badge %}
+                    <span class="detail-badge-pill">{{ product.badge }}</span>
+                    {% endif %}
+
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="detail-hero-img" id="main-product-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';">
+
+                    <button type="button" class="detail-wishlist-float {% if is_in_wishlist %}active{% endif %}" onclick="toggleWishlist({{ product.id }}, this)" aria-label="Save to Wishlist" title="Save to Wishlist">
+                        <span class="heart-icon">♥</span>
+                    </button>
+                </div>
+
+                <div class="product-guarantee-strip">
+                    <div class="guarantee-box">
+                        <span class="g-icon">🛡️</span>
+                        <div>
+                            <strong>100% Genuine</strong>
+                            <p>Brand certified</p>
+                        </div>
+                    </div>
+                    <div class="guarantee-box">
+                        <span class="g-icon">⚡</span>
+                        <div>
+                            <strong>Fast Dispatch</strong>
+                            <p>Ships within 24h</p>
+                        </div>
+                    </div>
+                    <div class="guarantee-box">
+                        <span class="g-icon">🔄</span>
+                        <div>
+                            <strong>7-Day Returns</strong>
+                            <p>Doorstep pickup</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Product Info & Variant Selectors -->
+            <div class="detail-info-column">
+                <div class="detail-brand-row">
+                    <span class="detail-brand-tag">{{ product.brand or 'KARTMART Verified' }}</span>
+                    <span class="detail-sku">SKU: KM-{{ product.id * 107 }}</span>
+                </div>
+
+                <h1 class="detail-title">{{ product.name }}</h1>
+
+                <div class="detail-rating-row">
+                    <span class="detail-rating-pill">★ {{ product.rating }}</span>
+                    <span class="detail-rating-meta">{{ product.reviews_count }} verified buyer ratings &amp; reviews</span>
+                </div>
+
+                <div class="detail-divider"></div>
+
+                <div class="detail-pricing-box">
+                    <div class="price-main-line">
+                        <span class="price-selling">{{ currency }}{{ "{:,.2f}".format(product.price) }}</span>
+                        {% if product.discount_percent > 0 %}
+                        <span class="price-discount-rate">-{{ product.discount_percent }}% OFF</span>
+                        {% endif %}
+                    </div>
+                    {% if product.original_price %}
+                    <div class="price-mrp-line">
+                        <span>M.R.P.: <del>{{ currency }}{{ "{:,.2f}".format(product.original_price) }}</del></span>
+                        <span class="inclusive-taxes">(Inclusive of all applicable GST &amp; taxes)</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Product Variants (Color, Size, Storage) -->
+                {% if variants_by_type %}
+                <div class="detail-variants-box">
+                    {% for var_type, variants in variants_by_type.items() %}
+                    <div class="variant-group">
+                        <label class="variant-label">Select {{ var_type }}:</label>
+                        <div class="variant-pills">
+                            {% for v in variants %}
+                            <label class="variant-pill-option">
+                                <input type="radio" name="variant_{{ var_type }}" value="{{ v.id }}" {% if loop.first %}checked{% endif %}>
+                                <span class="variant-pill-text">{{ v.variant_value }}{% if v.price_adjustment != 0 %} (+{{ currency }}{{ v.price_adjustment }}){% endif %}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Festival Offers Box -->
+                <div class="detail-offers-card">
+                    <h4>🪔 Active Offers &amp; Bank Discounts</h4>
+                    <ul>
+                        <li><strong>DIWALI50:</strong> Flat 50% discount up to ₹1,500 on minimum order ₹999.</li>
+                        <li><strong>DIWALIDHOOM:</strong> Flat ₹1,500 off on festive orders above ₹4,999.</li>
+                        <li><strong>FESTIVEGOLD:</strong> 30% instant discount on luxury &amp; lifestyle categories.</li>
+                        <li><strong>Simulated UPI:</strong> Instant zero-charge simulated confirmation with COD fallback.</li>
+                    </ul>
+                </div>
+
+                <div class="detail-description-block">
+                    <h3>About this product</h3>
+                    <p>{{ product.description }}</p>
+                </div>
+            </div>
+
+            <!-- Right: Buy Box Column -->
+            <div class="detail-buybox-column">
+                <div class="buybox-card">
+                    <div class="buybox-price-header">
+                        <span class="buybox-label">Total Payable</span>
+                        <div class="buybox-price">{{ currency }}{{ "{:,.2f}".format(product.price) }}</div>
+                    </div>
+
+                    <div class="buybox-delivery">
+                        <span class="delivery-truck-icon">🚚</span>
+                        <div>
+                            <strong>FREE Express Delivery</strong>
+                            <p class="delivery-date">Estimated arrival in 2-3 business days.</p>
+                            <div class="delivery-pincode">Deliver to: <strong>Hyderabad 500081</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="buybox-stock-status">
+                        {% if product.stock > 0 %}
+                        <span class="in-stock-tag">✅ In Stock ({{ product.stock }} units ready to dispatch)</span>
+                        {% else %}
+                        <span class="out-stock-tag">❌ Currently Sold Out</span>
+                        {% endif %}
+                    </div>
+
+                    {% if product.stock > 0 %}
+                    <form action="{{ url_for('cart.add', product_id=product.id) }}" method="POST" class="buybox-form">
+                        <div class="qty-select-row">
+                            <label for="detail-qty-select">Quantity:</label>
+                            <select name="quantity" id="detail-qty-select" class="qty-select">
+                                {% for q in range(1, [product.stock + 1, 6]|min) %}
+                                <option value="{{ q }}">{{ q }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="buybox-btn-stack">
+                            <button type="submit" class="btn btn-secondary btn-block btn-lg btn-cart-action">
+                                <span>🛒 Add to Bag</span>
+                            </button>
+                            <a href="{{ url_for('checkout.buy_now', product_id=product.id) }}" class="btn btn-primary btn-block btn-lg btn-buynow-action">
+                                <span>⚡ Buy Now</span>
+                            </a>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    <div class="buybox-security-guarantee">
+                        <div class="guarantee-item">
+                            <span>🔒</span>
+                            <span>Safe Simulated Payment</span>
+                        </div>
+                        <div class="guarantee-item">
+                            <span>💵</span>
+                            <span>Doorstep Cash on Delivery</span>
+                        </div>
+                        <div class="guarantee-item">
+                            <span>🔄</span>
+                            <span>Instant Return Request</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products Section -->
+        {% if related_products %}
+        <div class="related-products-section">
+            <div class="section-header-row">
+                <div>
+                    <span class="pill-tag">SIMILAR FINDS</span>
+                    <h2 class="section-title">You Might Also Like</h2>
+                </div>
+            </div>
+
+            <div class="products-grid">
+                {% for rprod in related_products %}
+                <article class="product-card" id="related-card-{{ rprod.id }}">
+                    <div class="product-card-top">
+                        <span class="product-badge subtle-badge">{{ rprod.brand or 'Curated' }}</span>
+                        <button type="button" class="wishlist-toggle-btn" onclick="toggleWishlist({{ rprod.id }}, this)" aria-label="Save to Wishlist">
+                            <span class="heart-icon">♥</span>
+                        </button>
+                    </div>
+
+                    <a href="{{ url_for('products.detail', product_id=rprod.id) }}" class="product-media-link">
+                        <img src="{{ rprod.image_url }}" alt="{{ rprod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
+                    </a>
+
+                    <div class="product-card-body">
+                        <h4 class="product-card-title">
+                            <a href="{{ url_for('products.detail', product_id=rprod.id) }}">{{ rprod.name }}</a>
+                        </h4>
+                        <div class="product-pricing-row">
+                            <span class="selling-price">{{ currency }}{{ "{:,.2f}".format(rprod.price) }}</span>
+                            {% if rprod.original_price %}
+                            <span class="mrp-price">{{ currency }}{{ "{:,.2f}".format(rprod.original_price) }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-actions">
+                            <a href="{{ url_for('checkout.buy_now', product_id=rprod.id) }}" class="btn btn-primary btn-sm btn-block">
+                                <span>⚡ Buy Now</span>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

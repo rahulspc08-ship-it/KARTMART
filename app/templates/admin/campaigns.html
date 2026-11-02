@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Promotional Campaigns &amp; Diwali Offers — KARTMART Admin{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-wrapper">
+    <div class="section-container">
+        <div class="admin-top-banner">
+            <div>
+                <span class="admin-badge">PROMOTIONS &amp; FESTIVALS</span>
+                <h1>Campaigns &amp; Diwali Offers Management</h1>
+            </div>
+            <div class="admin-header-actions">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">&larr; Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="admin-grid-2">
+            <!-- Active Campaigns List -->
+            <div class="admin-card">
+                <div class="card-title-row">
+                    <h2>Active &amp; Scheduled Campaigns</h2>
+                    <span class="badge badge-success">{{ campaigns|length }} Live</span>
+                </div>
+
+                <div class="campaigns-stack">
+                    {% for camp in campaigns %}
+                    <div class="campaign-admin-card {% if camp.is_currently_live %}live{% else %}inactive{% endif %}">
+                        <div class="camp-top">
+                            <span class="camp-badge">{{ camp.badge }}</span>
+                            <span class="camp-status">{% if camp.is_currently_live %}🟢 Live Now{% else %}⚪ Inactive / Expired{% endif %}</span>
+                        </div>
+                        <h3>{{ camp.title }}</h3>
+                        <p class="camp-desc">{{ camp.headline }}</p>
+                        <div class="camp-dates">
+                            <span>Valid: <strong>{{ camp.start_date.strftime('%d %b %Y') }}</strong> to <strong>{{ camp.end_date.strftime('%d %b %Y') }}</strong></span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Add Campaign Form -->
+                <div class="admin-sub-form-box">
+                    <h3>+ Create New Festival Campaign</h3>
+                    <form action="{{ url_for('admin.add_campaign') }}" method="POST">
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Campaign Title *</label>
+                                <input type="text" name="title" placeholder="e.g. New Year Bonanza 2027" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Badge Text</label>
+                                <input type="text" name="badge" placeholder="e.g. MEGA SALE" value="FESTIVE SALE">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Headline *</label>
+                            <input type="text" name="headline" placeholder="e.g. Flat 40% OFF across winter collections" required>
+                        </div>
+
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Discount Highlight</label>
+                                <input type="text" name="discount_text" placeholder="e.g. Up to 50% OFF">
+                            </div>
+                            <div class="form-group">
+                                <label>Duration (Days) *</label>
+                                <input type="number" name="duration_days" value="15" min="1" max="90" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm">Launch Campaign</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Coupons Manager -->
+            <div class="admin-card">
+                <div class="card-title-row">
+                    <h2>Promo Codes &amp; Coupons ({{ coupons|length }})</h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-data-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Min Order</th>
+                                <th>Expiry</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in coupons %}
+                            <tr>
+                                <td><strong class="code-pill">{{ c.code }}</strong></td>
+                                <td>
+                                    {% if c.discount_type == 'flat' %}
+                                    {{ currency }}{{ c.max_discount }} Flat
+                                    {% else %}
+                                    {{ c.discount_percent }}% (Max {{ currency }}{{ c.max_discount }})
+                                    {% endif %}
+                                </td>
+                                <td>{{ currency }}{{ c.min_order_amount }}</td>
+                                <td>
+                                    <span class="{% if c.is_expired %}text-danger font-weight-bold{% endif %}">
+                                        {{ c.end_date.strftime('%d %b %Y') if c.end_date else 'Permanent' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if c.is_expired %}
+                                    <span class="badge badge-danger">Expired</span>
+                                    {% elif c.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form action="{{ url_for('admin.toggle_coupon', coupon_id=c.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-outline btn-sm">
+                                            {% if c.is_active %}Disable{% else %}Enable{% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Add Coupon Form -->
+                <div class="admin-sub-form-box">
+                    <h3>+ Add Promotional Coupon</h3>
+                    <form action="{{ url_for('admin.add_coupon') }}" method="POST">
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Coupon Code *</label>
+                                <input type="text" name="code" placeholder="e.g. FESTIVE30" required uppercase>
+                            </div>
+                            <div class="form-group">
+                                <label>Discount Type</label>
+                                <select name="discount_type">
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="flat">Flat Amount (₹)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Percentage / Value *</label>
+                                <input type="number" name="discount_percent" value="25" min="1" max="90" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Discount Cap (₹) *</label>
+                                <input type="number" name="max_discount" value="1500" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Min Order (₹)</label>
+                                <input type="number" name="min_order_amount" value="999">
+                            </div>
+                            <div class="form-group">
+                                <label>Valid For (Days) *</label>
+                                <input type="number" name="duration_days" value="30" min="1" max="180" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="description" placeholder="Short description of discount benefit">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm">Create Coupon Code</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

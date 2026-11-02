@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KARTMART — Next-Gen Modern E-Commerce Platform. Shop Electronics, Designer Fashion, Home Living, Beauty, and Exclusive Diwali Deals.">
+    <title>{% block title %}KARTMART — The Modern E-Commerce Experience{% endblock %}</title>
+    <!-- Google Fonts Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Accessibility skip link -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Top Festive Announcement Marquee -->
+    <div class="top-announcement-bar" id="announcement-bar">
+        <div class="announcement-inner">
+            <span class="announcement-badge">🪔 DIWALI DHAMAKA SALE</span>
+            <span class="announcement-text">
+                Celebrate with up to <strong>50% OFF</strong>! Use coupon code <strong class="code-tag" onclick="copyCoupon('DIWALI50')">DIWALI50</strong> | Free Express Delivery on orders over {{ currency }}499 | 7-Day Returns
+            </span>
+            <button type="button" class="announcement-close" onclick="document.getElementById('announcement-bar').style.display='none'">&times;</button>
+        </div>
+    </div>
+
+    <!-- Main Floating Glass Header -->
+    <header class="km-header" id="site-header">
+        <div class="km-header-container">
+            <!-- Brand Monogram Logo -->
+            <a href="{{ url_for('products.index') }}" class="km-brand-logo" id="brand-logo">
+                <span class="brand-monogram">✦</span>
+                <span class="brand-wordmark">KART<span class="brand-highlight">MART</span></span>
+            </a>
+
+            <!-- Global Search Bar with Live Category Selector -->
+            <form class="km-search-form" action="{{ url_for('products.catalogue') }}" method="GET" id="global-search-form">
+                <div class="km-search-wrapper">
+                    <span class="search-lens-icon">🔍</span>
+                    <input type="search" name="q" id="nav-search-input" placeholder="Search across 13 categories, brands, tech &amp; fashion..." value="{{ request.args.get('q', '') }}" autocomplete="off">
+                    <button type="submit" class="km-search-btn" aria-label="Search Catalog">
+                        <span>Search</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Navigation Bar Actions -->
+            <nav class="km-nav-actions" aria-label="Primary User Actions">
+                <!-- Diwali Deals Link -->
+                <a href="{{ url_for('products.catalogue') }}?festive=true" class="km-action-link festive-link" id="nav-festive">
+                    <span class="action-icon">🪔</span>
+                    <span class="action-label">Diwali Deals</span>
+                </a>
+
+                <!-- Theme Switcher (Dark / Light Mode Toggle) -->
+                <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark and Light Mode" title="Toggle Theme">
+                    <span class="theme-icon" id="theme-icon">☀️</span>
+                </button>
+
+                <!-- Help & Support -->
+                <a href="{{ url_for('support.help_center') }}" class="km-action-link" id="nav-help" title="Customer Help Center">
+                    <span class="action-icon">💬</span>
+                    <span class="action-label">Help</span>
+                </a>
+
+                <!-- Wishlist Link -->
+                <a href="{{ url_for('account.wishlist') }}" class="km-action-link" id="nav-wishlist" title="Saved Wishlist">
+                    <span class="action-icon">❤️</span>
+                    <span class="action-label">Wishlist</span>
+                </a>
+
+                <!-- User Account Dropdown -->
+                <div class="km-dropdown" id="user-dropdown">
+                    <div class="km-dropdown-trigger" id="user-trigger" tabindex="0">
+                        <span class="user-greeting">{% if is_logged_in %}Hi, {{ logged_in_user.split()[0] }}{% else %}Account{% endif %}</span>
+                        <span class="user-action-title">Profile ▼</span>
+                    </div>
+
+                    <div class="km-dropdown-menu" id="user-dropdown-menu">
+                        {% if not is_logged_in %}
+                            <div class="dropdown-auth-prompt">
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-block">Sign In</a>
+                                <p class="dropdown-register-text">New to KARTMART? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+                            </div>
+                        {% else %}
+                            <div class="dropdown-user-header">
+                                <div class="dropdown-user-avatar">{{ logged_in_user[0]|upper }}</div>
+                                <div>
+                                    <strong>{{ logged_in_user }}</strong>
+                                    <span class="badge badge-subtle">{% if is_admin %}Administrator{% else %}Customer{% endif %}</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-sep"></div>
+                            <a href="{{ url_for('account.profile') }}" class="dropdown-item">👤 Account Settings</a>
+                            <a href="{{ url_for('orders.history') }}" class="dropdown-item">📦 Orders &amp; Shipments</a>
+                            <a href="{{ url_for('account.cancellations') }}" class="dropdown-item">🛑 Cancelled Orders</a>
+                            <a href="{{ url_for('account.addresses') }}" class="dropdown-item">📍 Delivery Addresses</a>
+                            <a href="{{ url_for('account.wishlist') }}" class="dropdown-item">❤️ Saved Wishlist</a>
+                            <a href="{{ url_for('account.security') }}" class="dropdown-item">🔒 Security &amp; Password</a>
+                            {% if is_admin %}
+                                <div class="dropdown-sep"></div>
+                                <a href="{{ url_for('admin.dashboard') }}" class="dropdown-item admin-item">⚙️ Admin Console</a>
+                                <a href="{{ url_for('admin.cancellations') }}" class="dropdown-item">🛑 Review Cancellations</a>
+                                <a href="{{ url_for('admin.campaigns') }}" class="dropdown-item">🪔 Manage Campaigns</a>
+                            {% endif %}
+                            <div class="dropdown-sep"></div>
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item text-danger">🚪 Sign Out</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Shopping Cart Drawer Trigger -->
+                <button type="button" class="km-cart-btn" id="open-cart-drawer-btn" aria-label="Open Shopping Bag">
+                    <span class="cart-bag-icon">🛍️</span>
+                    <span class="cart-badge-count" id="global-cart-count">{{ global_cart_count }}</span>
+                </button>
+            </nav>
+
+            <!-- Mobile Navigation Toggle -->
+            <button class="km-mobile-btn" id="mobile-toggle-btn" aria-label="Toggle Navigation Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Category Pill Strip (13 Distinct Categories) -->
+    <nav class="category-pill-strip" aria-label="Explore Categories">
+        <div class="pill-scroller-container">
+            <a href="{{ url_for('products.catalogue') }}" class="cat-pill all-pill">All Collections</a>
+            <a href="{{ url_for('products.catalogue', category='electronics') }}" class="cat-pill">⚡ Electronics</a>
+            <a href="{{ url_for('products.catalogue', category='mens-fashion') }}" class="cat-pill">👔 Men's Fashion</a>
+            <a href="{{ url_for('products.catalogue', category='womens-fashion') }}" class="cat-pill">👗 Women's Fashion</a>
+            <a href="{{ url_for('products.catalogue', category='kids-fashion') }}" class="cat-pill">🧸 Kids &amp; Baby</a>
+            <a href="{{ url_for('products.catalogue', category='footwear') }}" class="cat-pill">👟 Footwear</a>
+            <a href="{{ url_for('products.catalogue', category='toys-games') }}" class="cat-pill">🎮 Toys &amp; Games</a>
+            <a href="{{ url_for('products.catalogue', category='home-kitchen') }}" class="cat-pill">☕ Kitchen</a>
+            <a href="{{ url_for('products.catalogue', category='furniture-decor') }}" class="cat-pill">🪑 Living &amp; Decor</a>
+            <a href="{{ url_for('products.catalogue', category='beauty-wellness') }}" class="cat-pill">✨ Beauty</a>
+            <a href="{{ url_for('products.catalogue', category='sports-fitness') }}" class="cat-pill">🏋️ Sports</a>
+            <a href="{{ url_for('products.catalogue', category='books-stationery') }}" class="cat-pill">📚 Books</a>
+            <a href="{{ url_for('products.catalogue', category='accessories-bags') }}" class="cat-pill">👜 Accessories</a>
+            <a href="{{ url_for('products.catalogue', category='grocery-essentials') }}" class="cat-pill">🌿 Gourmet</a>
+        </div>
+    </nav>
+
+    <!-- Global Alert Notifications -->
+    <div class="km-alerts-container" id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="km-alert km-alert-{{ category }}" role="alert">
+                        <span class="km-alert-icon">{% if category == 'success' %}✓{% elif category == 'danger' %}⚠️{% else %}ℹ️{% endif %}</span>
+                        <span class="km-alert-text">{{ message }}</span>
+                        <button type="button" class="km-alert-dismiss" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Page Content Body -->
+    <main id="main-content" class="km-main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Slide-Out Shopping Bag Drawer -->
+    <aside class="cart-drawer" id="cart-drawer" aria-hidden="true">
+        <div class="cart-drawer-overlay" id="cart-drawer-overlay"></div>
+        <div class="cart-drawer-panel">
+            <div class="cart-drawer-header">
+                <div class="drawer-header-title">
+                    <span class="cart-header-icon">🛍️</span>
+                    <h3>Shopping Bag (<span id="drawer-cart-count">{{ global_cart_count }}</span>)</h3>
+                </div>
+                <button type="button" class="drawer-close-btn" id="close-cart-drawer-btn" aria-label="Close Shopping Bag">&times;</button>
+            </div>
+
+            <!-- Free Delivery Progress Bar -->
+            <div class="delivery-progress-box">
+                <div class="progress-label">
+                    <span id="delivery-threshold-msg">Add items to unlock <strong>FREE Delivery</strong></span>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="delivery-progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Drawer Cart Items Container -->
+            <div class="cart-drawer-items" id="cart-drawer-items">
+                <div class="drawer-loading">
+                    <span>Loading your bag...</span>
+                </div>
+            </div>
+
+            <!-- Drawer Footer Summary -->
+            <div class="cart-drawer-footer">
+                <div class="drawer-summary-row">
+                    <span>Subtotal:</span>
+                    <strong id="drawer-subtotal">{{ currency }}0.00</strong>
+                </div>
+                <div class="drawer-summary-row text-muted">
+                    <span>Estimated Delivery:</span>
+                    <span id="drawer-delivery">FREE</span>
+                </div>
+                <div class="drawer-summary-row total-row">
+                    <span>Payable Total:</span>
+                    <strong class="total-amount" id="drawer-total">{{ currency }}0.00</strong>
+                </div>
+                <div class="drawer-action-group">
+                    <a href="{{ url_for('checkout.index') }}" class="btn btn-primary btn-block btn-lg" id="drawer-checkout-btn">
+                        <span>Proceed to Checkout</span>
+                        <span class="btn-arrow">&rarr;</span>
+                    </a>
+                    <a href="{{ url_for('cart.view') }}" class="btn btn-secondary btn-block btn-sm">
+                        View Full Shopping Bag
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Modern Luxury Site Footer -->
+    <footer class="km-footer">
+        <div class="km-footer-top">
+            <div class="section-container footer-grid">
+                <!-- Brand Mission Column -->
+                <div class="footer-col brand-col">
+                    <a href="{{ url_for('products.index') }}" class="footer-logo">
+                        <span class="brand-monogram">✦</span>
+                        <span>KART<span class="brand-highlight">MART</span></span>
+                    </a>
+                    <p class="footer-bio">
+                        India’s next-generation curated shopping platform. Engineered with precision architecture to deliver authentic commercial-grade shopping, instant simulated checkout, and dependable customer service.
+                    </p>
+                    <div class="footer-badges-list">
+                        <span class="footer-pill">🛡️ 100% Purchase Protection</span>
+                        <span class="footer-pill">⚡ Free Express Shipping</span>
+                        <span class="footer-pill">🔄 7-Day Doorstep Returns</span>
+                    </div>
+                </div>
+
+                <!-- Explore Collections -->
+                <div class="footer-col">
+                    <h4>Collections (13 Categories)</h4>
+                    <ul>
+                        <li><a href="{{ url_for('products.catalogue', category='electronics') }}">Electronics &amp; Tech</a></li>
+                        <li><a href="{{ url_for('products.catalogue', category='mens-fashion') }}">Men's Designer Apparel</a></li>
+                        <li><a href="{{ url_for('products.catalogue', category='womens-fashion') }}">Women's Luxury Fashion</a></li>
+                        <li><a href="{{ url_for('products.catalogue', category='footwear') }}">Performance Footwear</a></li>
+                        <li><a href="{{ url_for('products.catalogue', category='home-kitchen') }}">Home &amp; Kitchen</a></li>
+                        <li><a href="{{ url_for('products.catalogue', category='beauty-wellness') }}">Beauty &amp; Skincare</a></li>
+                        <li><a href="{{ url_for('products.catalogue') }}?festive=true" class="text-warning">🪔 Diwali Special Deals</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Care -->
+                <div class="footer-col">
+                    <h4>Customer Care</h4>
+                    <ul>
+                        <li><a href="{{ url_for('orders.history') }}">Track Your Order</a></li>
+                        <li><a href="{{ url_for('account.cancellations') }}">Cancellations &amp; Refunds</a></li>
+                        <li><a href="{{ url_for('account.profile') }}">My Account &amp; Settings</a></li>
+                        <li><a href="{{ url_for('account.addresses') }}">Delivery Address Book</a></li>
+                        <li><a href="{{ url_for('account.wishlist') }}">Saved Wishlist</a></li>
+                        <li><a href="{{ url_for('support.help_center') }}">Help Center &amp; FAQs</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal & Trust -->
+                <div class="footer-col">
+                    <h4>Portals &amp; Legal</h4>
+                    <ul>
+                        <li><a href="{{ url_for('auth.admin_login') }}">🛡️ Admin Portal Login</a></li>
+                        <li><a href="{{ url_for('auth.admin_register') }}">⚡ Admin Registration</a></li>
+                        <li><a href="{{ url_for('support.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('support.terms') }}">Terms &amp; Conditions</a></li>
+                        <li><a href="{{ url_for('api.health') }}" target="_blank">System Health Monitor</a></li>
+                    </ul>
+                    <div class="payment-methods-icons">
+                        <span class="pay-chip">⚡ Instant UPI</span>
+                        <span class="pay-chip">💳 Visa / Master</span>
+                        <span class="pay-chip">💵 Cash on Delivery</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="km-footer-bottom">
+            <div class="section-container footer-bottom-inner">
+                <p>&copy; 2026 KARTMART Technologies Inc. All rights reserved. Precision crafted for the modern shopper.</p>
+                <div class="footer-bottom-links">
+                    <a href="{{ url_for('support.privacy') }}">Privacy</a> &bull;
+                    <a href="{{ url_for('support.terms') }}">Terms</a> &bull;
+                    <a href="{{ url_for('support.help_center') }}">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Main Client Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
