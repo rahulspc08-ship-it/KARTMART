@@ -11,8 +11,9 @@ from app.models import (
 )
 
 
-def seed_expanded_catalog():
-    app = create_app()
+def seed_expanded_catalog(app=None):
+    if app is None:
+        app = create_app()
     with app.app_context():
         print("[*] Seeding expanded KARTMART 13-category catalog and campaigns...")
 

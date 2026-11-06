@@ -60,3 +60,31 @@ def validate_coupon():
         'discount_amount': 0.0,
         'message': msg
     })
+
+
+@api_bp.route('/seed', methods=['GET', 'POST'])
+def trigger_seed():
+    """Trigger or re-seed the catalog and demo accounts."""
+    from app.models import Product
+    current_count = Product.query.count()
+    key = request.args.get('key', '')
+    expected_key = current_app.config.get('ADMIN_REGISTRATION_KEY', 'Admin@2026')
+
+    # Allow without key if database is empty, require key if already seeded
+    if current_count > 0 and key != expected_key:
+        return jsonify({
+            'success': False,
+            'products_count': current_count,
+            'message': f'Database already has {current_count} products. Provide ?key={expected_key} to re-seed.'
+        }), 200
+
+    from seed_db import seed_database
+    from seed_catalog_expanded import seed_expanded_catalog
+    seed_database()
+    seed_expanded_catalog()
+    new_count = Product.query.count()
+    return jsonify({
+        'success': True,
+        'products_count': new_count,
+        'message': f'Successfully seeded database with {new_count} products across 13 categories.'
+    })

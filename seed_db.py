@@ -3,8 +3,9 @@ from app.extensions import db
 from app.models import User, Category, Product, Coupon, Review, Order, OrderItem
 
 
-def seed_database():
-    app = create_app('development')
+def seed_database(app=None):
+    if app is None:
+        app = create_app('development')
     with app.app_context():
         print("[*] Seeding KARTMART database...")
         db.create_all()
