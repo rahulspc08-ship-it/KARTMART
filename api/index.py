@@ -14,8 +14,13 @@ with app.app_context():
     try:
         db.create_all()
         from app.models import Product
-        if Product.query.count() == 0:
-            app.logger.info("Fresh database detected. Seeding KARTMART catalogue...")
+        needs_seed = Product.query.count() == 0
+        missing_images = Product.query.filter(
+            (Product.image_url.is_(None)) | (Product.image_url == 'None')
+        ).count() > 0
+
+        if needs_seed or missing_images:
+            app.logger.info("Initializing or updating KARTMART catalogue images...")
             try:
                 from seed_db import seed_database
                 seed_database(app)

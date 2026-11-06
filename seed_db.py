@@ -43,11 +43,11 @@ def seed_database(app=None):
 
         # 2. Seed Categories
         categories_data = [
-            {'name': 'Electronics', 'slug': 'electronics', 'icon': 'EL', 'description': 'Mobiles, laptops, earbuds, smart gadgets'},
-            {'name': 'Fashion & Clothing', 'slug': 'clothing', 'icon': 'FA', 'description': 'Trendy apparel, jackets, streetwear'},
-            {'name': 'Accessories', 'slug': 'accessories', 'icon': 'AC', 'description': 'Smartwatches, luxury sunglasses, leather bags'},
-            {'name': 'Home & Kitchen', 'slug': 'home', 'icon': 'HM', 'description': 'Coffee makers, smart lamps, modern decor'},
-            {'name': 'Books & Tech', 'slug': 'books', 'icon': 'BK', 'description': 'Software architecture, business & tech bestsellers'}
+            {'name': 'Electronics', 'slug': 'electronics', 'icon': 'EL', 'description': 'Mobiles, laptops, earbuds, smart gadgets', 'image_url': '/static/img/categories/cat_electronics.jpg'},
+            {'name': 'Fashion & Clothing', 'slug': 'clothing', 'icon': 'FA', 'description': 'Trendy apparel, jackets, streetwear', 'image_url': '/static/img/categories/cat_clothing.jpg'},
+            {'name': 'Accessories', 'slug': 'accessories', 'icon': 'AC', 'description': 'Smartwatches, luxury sunglasses, leather bags', 'image_url': '/static/img/categories/cat_accessories.jpg'},
+            {'name': 'Home & Kitchen', 'slug': 'home', 'icon': 'HM', 'description': 'Coffee makers, smart lamps, modern decor', 'image_url': '/static/img/categories/cat_home.jpg'},
+            {'name': 'Books & Tech', 'slug': 'books', 'icon': 'BK', 'description': 'Software architecture, business & tech bestsellers', 'image_url': '/static/img/categories/cat_books.jpg'}
         ]
 
         cat_map = {}
@@ -57,6 +57,8 @@ def seed_database(app=None):
                 cat = Category(**cdata)
                 db.session.add(cat)
                 db.session.flush()
+            else:
+                cat.image_url = cdata.get('image_url', cat.image_url)
             cat_map[cdata['slug']] = cat
 
         db.session.commit()
@@ -87,7 +89,8 @@ def seed_database(app=None):
                 'rating': 4.9,
                 'reviews_count': 128,
                 'badge': 'Deal of the Day',
-                'emoji': 'LAPTOP'
+                'emoji': 'LAPTOP',
+                'image_url': '/static/img/products/gaming_laptop.jpg'
             },
             {
                 'category_slug': 'electronics',
@@ -99,7 +102,8 @@ def seed_database(app=None):
                 'rating': 4.8,
                 'reviews_count': 342,
                 'badge': 'Best Seller',
-                'emoji': 'HEADPHONE'
+                'emoji': 'HEADPHONE',
+                'image_url': '/static/img/products/headphones.jpg'
             },
             {
                 'category_slug': 'electronics',
@@ -111,7 +115,8 @@ def seed_database(app=None):
                 'rating': 4.9,
                 'reviews_count': 512,
                 'badge': 'Top Trending',
-                'emoji': 'PHONE'
+                'emoji': 'PHONE',
+                'image_url': '/static/img/products/smartphone.jpg'
             },
             {
                 'category_slug': 'electronics',
@@ -123,7 +128,8 @@ def seed_database(app=None):
                 'rating': 4.4,
                 'reviews_count': 89,
                 'badge': 'Hot Deal 58% Off',
-                'emoji': 'WATCH'
+                'emoji': 'WATCH',
+                'image_url': '/static/img/products/smartwatch.jpg'
             },
             # Fashion
             {
@@ -136,7 +142,8 @@ def seed_database(app=None):
                 'rating': 4.7,
                 'reviews_count': 64,
                 'badge': '50% Off Special',
-                'emoji': 'COAT'
+                'emoji': 'COAT',
+                'image_url': '/static/img/products/womens_trench.jpg'
             },
             {
                 'category_slug': 'clothing',
@@ -148,7 +155,8 @@ def seed_database(app=None):
                 'rating': 4.6,
                 'reviews_count': 112,
                 'badge': 'Amazon Choice',
-                'emoji': 'HOODIE'
+                'emoji': 'HOODIE',
+                'image_url': '/static/img/products/kids_hoodie.jpg'
             },
             {
                 'category_slug': 'clothing',
@@ -160,7 +168,8 @@ def seed_database(app=None):
                 'rating': 4.5,
                 'reviews_count': 78,
                 'badge': 'Popular',
-                'emoji': 'JEANS'
+                'emoji': 'JEANS',
+                'image_url': '/static/img/products/activewear_set.jpg'
             },
             # Accessories
             {
@@ -173,7 +182,8 @@ def seed_database(app=None):
                 'rating': 4.9,
                 'reviews_count': 45,
                 'badge': 'Limited Edition',
-                'emoji': 'DIVER'
+                'emoji': 'DIVER',
+                'image_url': '/static/img/products/smartwatch.jpg'
             },
             {
                 'category_slug': 'accessories',
@@ -185,7 +195,8 @@ def seed_database(app=None):
                 'rating': 4.7,
                 'reviews_count': 93,
                 'badge': 'Best Seller',
-                'emoji': 'BAG'
+                'emoji': 'BAG',
+                'image_url': '/static/img/products/leather_bag.jpg'
             },
             {
                 'category_slug': 'accessories',
@@ -197,7 +208,8 @@ def seed_database(app=None):
                 'rating': 4.6,
                 'reviews_count': 156,
                 'badge': 'Summer Sale',
-                'emoji': 'GLASSES'
+                'emoji': 'GLASSES',
+                'image_url': '/static/img/products/sunglasses.jpg'
             },
             # Home & Kitchen
             {
@@ -210,7 +222,8 @@ def seed_database(app=None):
                 'rating': 4.7,
                 'reviews_count': 210,
                 'badge': 'Top Rated',
-                'emoji': 'COFFEE'
+                'emoji': 'COFFEE',
+                'image_url': '/static/img/products/espresso_machine.jpg'
             },
             {
                 'category_slug': 'home',
@@ -222,7 +235,8 @@ def seed_database(app=None):
                 'rating': 4.8,
                 'reviews_count': 84,
                 'badge': 'Home Trend',
-                'emoji': 'LAMP'
+                'emoji': 'LAMP',
+                'image_url': '/static/img/products/floor_lamp.jpg'
             },
             # Books
             {
@@ -235,7 +249,8 @@ def seed_database(app=None):
                 'rating': 5.0,
                 'reviews_count': 840,
                 'badge': '#1 Best Seller in Tech',
-                'emoji': 'BOOK'
+                'emoji': 'BOOK',
+                'image_url': '/static/img/products/fountain_pen.jpg'
             },
             {
                 'category_slug': 'books',
@@ -247,7 +262,8 @@ def seed_database(app=None):
                 'rating': 4.8,
                 'reviews_count': 620,
                 'badge': 'Classic',
-                'emoji': 'BOOK'
+                'emoji': 'BOOK',
+                'image_url': '/static/img/products/leather_journal.jpg'
             }
         ]
 
@@ -259,6 +275,12 @@ def seed_database(app=None):
                 prod = Product(category_id=cat.id, **pdata)
                 db.session.add(prod)
                 db.session.flush()
+            else:
+                if pdata.get('image_url') and not existing.image_url:
+                    existing.image_url = pdata['image_url']
+                    prod = existing
+                else:
+                    prod = existing
 
                 # Add sample review
                 rev = Review(

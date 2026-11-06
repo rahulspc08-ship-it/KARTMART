@@ -130,7 +130,7 @@
                 </div>
 
                 <a href="{{ url_for('products.detail', product_id=prod.id) }}" class="product-media-link">
-                    <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
+                    <img src="{{ prod.image_url if prod.image_url and prod.image_url != 'None' else '/static/img/products/fallback.jpg' }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
                 </a>
 
                 <div class="product-card-body">
@@ -201,7 +201,7 @@
                 </div>
 
                 <a href="{{ url_for('products.detail', product_id=prod.id) }}" class="product-media-link">
-                    <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
+                    <img src="{{ prod.image_url if prod.image_url and prod.image_url != 'None' else '/static/img/products/fallback.jpg' }}" alt="{{ prod.name }}" class="product-card-img" onerror="this.onerror=null;this.src='/static/img/products/fallback.jpg';" loading="lazy">
                 </a>
 
                 <div class="product-card-body">
