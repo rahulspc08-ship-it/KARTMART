@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
+_default_db_uri = 'sqlite:////tmp/kartmart.db' if os.getenv('VERCEL') else 'sqlite:///kartmart.db'
+
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'kartmart-secret-key-development-2026')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///kartmart.db')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', _default_db_uri)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Store Branding
